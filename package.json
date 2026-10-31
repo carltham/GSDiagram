@@ -2,7 +2,7 @@
   "name": "gsdiagram",
   "displayName": "GSDiagram",
   "description": "Free diagrams of a project's processes, kept as files in the project and checked against its list of processes.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "gsdiagram",
   "license": "MIT",
   "repository": {
