@@ -6,7 +6,8 @@ import { copyFile, mkdir, readdir } from 'node:fs/promises';
 const watch = process.argv.includes('--watch');
 
 const node = { bundle: true, platform: 'node', format: 'cjs', target: 'node20', sourcemap: true, logLevel: 'info' };
-const browser = { bundle: true, platform: 'browser', format: 'iife', target: 'es2022', sourcemap: true, logLevel: 'info' };
+// The pages are minified, except while watching; the source maps still point at the source.
+const browser = { bundle: true, platform: 'browser', format: 'iife', target: 'es2022', sourcemap: true, minify: !watch, logLevel: 'info' };
 
 const tests = (await readdir('test')).filter(f => f.endsWith('.test.ts')).map(f => `test/${f}`);
 

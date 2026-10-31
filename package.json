@@ -5,6 +5,12 @@
   "version": "0.0.1",
   "publisher": "gsdiagram",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carltham/GSDiagram.git"
+  },
+  "homepage": "https://github.com/carltham/GSDiagram#readme",
+  "bugs": "https://github.com/carltham/GSDiagram/issues",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -77,7 +83,9 @@
     "check": "node dist/cli.js check",
     "render": "node dist/cli.js render",
     "accept": "node dist/cli.js accept",
-    "package": "vsce package"
+    "vscode:prepublish": "node esbuild.mjs",
+    "package": "vsce package",
+    "release": "npm test && npm run test:vscode && npm run test:ui && npm run package"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",

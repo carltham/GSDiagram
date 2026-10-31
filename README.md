@@ -97,6 +97,7 @@ npm test               # unit tests
 npm run test:vscode    # the extension in a test instance of VS Code
 npm run test:ui        # the UI, driven by Playwright in a test instance of VS Code
 npm run package        # gsdiagram-<version>.vsix
+npm run release        # every test, then the package
 ```
 
 The UI tests are in `dev/testing/playwright`, a Node project of its own with its own Playwright: install it once with `npm --prefix dev/testing/playwright install`. Each test starts its own VS Code on a fresh copy of `test/fixture`, then clicks, drags, types, and uses the command palette, the Problems panel, the lenses, and the open dialogs as a user would. On Linux, `xvfb-run -a npm run test:ui` keeps the windows off the screen. A failed test leaves a screenshot and a trace in `dev/testing/playwright/test-results/`; `npm --prefix dev/testing/playwright run report` shows them.
@@ -105,7 +106,16 @@ The tests that change files on disk need VS Code's file watcher. On Linux it sto
 
 F5 in VS Code opens a window with the extension and `test/fixture`. Install a package with `code --install-extension gsdiagram-<version>.vsix`.
 
-When `npm run test:vscode` is started from a terminal inside VS Code, unset `ELECTRON_RUN_AS_NODE` first, or the test instance starts as plain Node. The UI tests clear it themselves.
+`npm run build` minifies the pages of the editor; `npm run watch` leaves them readable.
+
+## Release
+
+1. `npm version <version>` sets the version, commits it, and tags it `v<version>`.
+2. `xvfb-run -a npm run release` runs every test and builds `gsdiagram-<version>.vsix`. Without `xvfb-run`, the test windows open on the screen.
+3. Publish the package:
+   - On GitHub: `git push --follow-tags`, then `gh release create v<version> gsdiagram-<version>.vsix --generate-notes`.
+   - On the VS Code Marketplace, under the publisher `gsdiagram`: `npx vsce login gsdiagram` once, with an Azure DevOps token that may manage the Marketplace, then `npx vsce publish`.
+   - On Open VSX: `npx ovsx publish gsdiagram-<version>.vsix -p <token>`.
 
 ## Licence
 
