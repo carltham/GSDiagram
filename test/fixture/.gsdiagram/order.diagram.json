@@ -1,0 +1,13 @@
+{
+  "title": "Order",
+  "nodes": [
+    { "id": "start", "label": "Start", "kind": "start" },
+    { "id": "draft", "label": "Draft" },
+    { "id": "sent", "label": "Sent" }
+  ],
+  "edges": [
+    { "from": "start", "to": "draft", "label": "Create", "process": "ORDE1" },
+    { "from": "draft", "to": "sent", "label": "Send", "process": "ORDE2" },
+    { "from": "draft", "to": "sent", "label": "Ship", "process": "ORDE9" }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "name": "gsdiagram",
+  "displayName": "GSDiagram",
+  "description": "Free diagrams of a project's processes, kept as files in the project and checked against its list of processes.",
+  "version": "0.0.1",
+  "publisher": "gsdiagram",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "gsdiagram.editor",
+        "displayName": "GSDiagram",
+        "selector": [
+          {
+            "filenamePattern": "*.diagram.json"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "commands": [
+      {
+        "command": "gsdiagram.check",
+        "title": "Check",
+        "category": "GSDiagram"
+      },
+      {
+        "command": "gsdiagram.acceptChanges",
+        "title": "Accept process changes",
+        "category": "GSDiagram"
+      },
+      {
+        "command": "gsdiagram.renderPng",
+        "title": "Render PNG",
+        "category": "GSDiagram"
+      },
+      {
+        "command": "gsdiagram.chooseFolder",
+        "title": "Choose data folder",
+        "category": "GSDiagram"
+      },
+      {
+        "command": "gsdiagram.setProcessesFile",
+        "title": "Set processes file",
+        "category": "GSDiagram"
+      }
+    ],
+    "configuration": {
+      "title": "GSDiagram",
+      "properties": {
+        "gsdiagram.folder": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "The data folder, relative to the project. Empty means .gsdiagram. A folder outside the project is refused."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "test": "node esbuild.mjs && node --test \"dist/test/*.test.js\"",
+    "test:vscode": "node esbuild.mjs && node dist/test/vscode/run.js",
+    "check": "node dist/cli.js check",
+    "render": "node dist/cli.js render",
+    "accept": "node dist/cli.js accept",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.10.0",
+    "@types/vscode": "~1.90.0",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.2.1",
+    "elkjs": "^0.10.0",
+    "esbuild": "^0.25.0",
+    "mocha": "^10.8.2",
+    "playwright-core": "^1.50.0",
+    "typescript": "^5.7.0"
+  }
+}
