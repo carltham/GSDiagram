@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { folderSetting, isInside, resolveDataFolder } from './folder';
-import { Config, DEFAULT_ID_PATTERN } from './types';
+import { Config, DEFAULT_ARCHITECTURE_FOLDER, DEFAULT_ID_PATTERN } from './types';
 
 export interface SourceFile { file: string; text: string }
 
@@ -14,6 +14,8 @@ export interface Project {
   config: Config;
   diagrams: SourceFile[];
   processes?: SourceFile;
+  // The Markdown files of the architecture folder, in all its subfolders.
+  architecture: SourceFile[];
 }
 
 export const DIAGRAM_SUFFIX = '.diagram.json';
@@ -54,7 +56,16 @@ export async function loadProject(root: string, folderSettingValue?: string, ove
     const file = path.resolve(root, config.processesFile);
     if (isInside(root, file) && existsSync(file)) processes = { file, text: await read(file) };
   }
-  return { root, folder, config, diagrams, processes };
+  const architecture: SourceFile[] = [];
+  const archFolder = path.resolve(root, config.architectureFolder || DEFAULT_ARCHITECTURE_FOLDER);
+  if (isInside(root, archFolder) && existsSync(archFolder)) {
+    // parentPath is new in Node 20.12; VS Code 1.90 runs Node 20.9, which calls it path.
+    const files = (await readdir(archFolder, { recursive: true, withFileTypes: true }))
+      .filter(e => e.isFile() && /\.md$/i.test(e.name))
+      .map(e => path.join(e.parentPath ?? (e as unknown as { path: string }).path, e.name)).sort();
+    for (const file of files) architecture.push({ file, text: await read(file) });
+  }
+  return { root, folder, config, diagrams, processes, architecture };
 }
 
 export const idPattern = (config: Config) => config.idPattern || DEFAULT_ID_PATTERN;

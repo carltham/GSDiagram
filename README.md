@@ -50,6 +50,7 @@ The id pattern is `[A-Z]{4}\d+` unless `idPattern` in `config.json` says otherwi
 - `process`, on a node or an arrow, is a process id from the processes file.
 - The layout is automatic. A dragged box gets `x` and `y`, and keeps them until **Reset layout**.
 - `drawn` records the text of each process when the diagram was last accepted; see the check.
+- `source`, in a generated diagram, names the architecture file and section that describe it; see below.
 
 A `*.diagram.json` file opens in the diagram editor. **Reopen Editor With… → Text Editor** shows the JSON. A drag changes the file like typing would: undo, save, and diff work as usual. The editor writes the file with two-space indentation.
 
@@ -70,20 +71,60 @@ It runs whenever a diagram, `config.json`, or a Markdown file changes, and on **
 | A file that is not a diagram; an arrow to a node that does not exist; a node id used twice; a processes file that is missing | Error |
 | A process id that is not in the processes file | Warning |
 | A process whose text has changed since the diagram was accepted | Warning |
+| A generated diagram whose source section is gone from the architecture files | Warning |
 | A process that is in no diagram | Information |
 
 After checking a diagram against the changed processes, **GSDiagram: Accept process changes** records their current text in the diagram's `drawn`.
 
 In the processes file, a line above each process says which diagrams use it, and opens them. Hovering over the process says the same.
 
+## Diagrams from the architecture files
+
+**GSDiagram: Generate diagrams** draws the diagrams that the Markdown files in `dev/architecture` describe, in all its subfolders. Another folder in the project can be set as `architectureFolder` in `config.json`. A diagram is described by:
+
+- A Mermaid flowchart or state diagram. Other Mermaid diagrams, such as sequence diagrams, are not drawn.
+
+  ````markdown
+  ## Order life cycle
+
+  ```mermaid
+  stateDiagram-v2
+      [*] --> Draft : Create (ORDE1)
+      Draft --> Sent : Send (ORDE2)
+      Sent --> [*]
+  ```
+  ````
+
+- A section marked `<!-- diagram -->`, which does not show when the Markdown is read. Its list items with arrows are the boxes and arrows; `Start` and `End` are the dots.
+
+  ```markdown
+  ## Order life cycle
+  <!-- diagram -->
+  - Start → Draft: Create (ORDE1)
+  - Draft → Sent: Send (ORDE2)
+  - Sent → End
+  ```
+
+  A marked section without arrows is drawn from its numbered steps, one after the other, from Start to End. A step's label is its text up to the first colon or full stop.
+
+A process id in parentheses, `(ORDE1)`, links a box or an arrow to that process, and the check checks it against the processes file. A section without a marker is not drawn, even if it has arrows or steps.
+
+Each diagram is named after its heading, `order-life-cycle.diagram.json`, unless the marker names it: `<!-- diagram: orders -->`. A marker before a Mermaid block names that block. The diagram records where it was described in `source`, such as `dev/architecture/orders.md#order-life-cycle`. Generate never changes a diagram that is there.
+
+**GSDiagram: Update diagrams** does the same, and draws each generated diagram again from its source: change the architecture file, not the diagram. Dragged positions and accepted process changes are kept. A diagram without `source`, drawn by hand, is never changed. When the section of a diagram's source is gone, the check says so.
+
+The changes are saved, and can be undone like an edit.
+
 ## Command line
 
 The same check and drawing, outside VS Code, after `npm run build`:
 
 ```
-node dist/cli.js check  <project>
-node dist/cli.js render <project> [--chrome /usr/bin/google-chrome]
-node dist/cli.js accept <project>
+node dist/cli.js check    <project>
+node dist/cli.js render   <project> [--chrome /usr/bin/google-chrome]
+node dist/cli.js accept   <project>
+node dist/cli.js generate <project>
+node dist/cli.js update   <project>
 ```
 
 `check` exits with 1 when there are errors or warnings. `render` needs Chrome or Chromium.

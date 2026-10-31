@@ -1,13 +1,17 @@
-// The command line: check, render, and accept, for a project folder. The same code as the extension.
-//   node dist/cli.js check  <project>
-//   node dist/cli.js render <project> [--chrome <path>]
-//   node dist/cli.js accept <project>
+// The command line: check, render, accept, generate, and update, for a project folder. The same code as the extension.
+//   node dist/cli.js check    <project>
+//   node dist/cli.js render   <project> [--chrome <path>]
+//   node dist/cli.js accept   <project>
+//   node dist/cli.js generate <project>
+//   node dist/cli.js update   <project>
 
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { acceptChanges, checkProject } from '../shared/check';
+import { describedDiagrams, planDiagrams } from '../shared/generate';
 import { readProcesses } from '../shared/processes';
 import { configuredFolder, idPattern, loadProject } from '../shared/project';
+import { DEFAULT_ARCHITECTURE_FOLDER } from '../shared/types';
 
 async function main() {
   const [command, root = '.', ...rest] = process.argv.slice(2);
@@ -29,6 +33,17 @@ async function main() {
       console.log(`accepted ${path.relative(projectRoot, d.file)}`);
     }
 
+  } else if (command === 'generate' || command === 'update') {
+    if (describedDiagrams(project).length === 0)
+      throw new Error(`No diagrams are described in ${project.config.architectureFolder || DEFAULT_ARCHITECTURE_FOLDER}.`);
+    const changes = planDiagrams(project, { update: command === 'update' });
+    for (const c of changes) {
+      await mkdir(path.dirname(c.file), { recursive: true });
+      await writeFile(c.file, c.text);
+      console.log(`${c.created ? 'created' : 'updated'} ${path.relative(projectRoot, c.file)}`);
+    }
+    if (changes.length === 0) console.log('The diagrams are up to date.');
+
   } else if (command === 'render') {
     const at = rest.indexOf('--chrome');
     const chrome = at >= 0 ? rest[at + 1] : '/usr/bin/google-chrome';
@@ -49,7 +64,7 @@ async function main() {
     }
 
   } else {
-    console.log('Usage: gsdiagram check|render|accept <project> [--chrome <path>]');
+    console.log('Usage: gsdiagram check|render|accept|generate|update <project> [--chrome <path>]');
     process.exitCode = 2;
   }
 }

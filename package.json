@@ -47,6 +47,16 @@
         "category": "GSDiagram"
       },
       {
+        "command": "gsdiagram.generate",
+        "title": "Generate diagrams",
+        "category": "GSDiagram"
+      },
+      {
+        "command": "gsdiagram.update",
+        "title": "Update diagrams",
+        "category": "GSDiagram"
+      },
+      {
         "command": "gsdiagram.renderPng",
         "title": "Render PNG",
         "category": "GSDiagram"
@@ -83,6 +93,8 @@
     "check": "node dist/cli.js check",
     "render": "node dist/cli.js render",
     "accept": "node dist/cli.js accept",
+    "generate": "node dist/cli.js generate",
+    "update": "node dist/cli.js update",
     "vscode:prepublish": "node esbuild.mjs",
     "package": "vsce package",
     "release": "npm test && npm run test:vscode && npm run test:ui && npm run package"

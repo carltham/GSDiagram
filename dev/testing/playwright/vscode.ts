@@ -100,6 +100,7 @@ export class VSCode {
   file(rel: string): string { return path.join(this.project, rel); }
   read(rel: string): Promise<string> { return readFile(this.file(rel), 'utf8'); }
   readBytes(rel: string): Promise<Buffer> { return readFile(this.file(rel)); }
+  remove(rel: string): Promise<void> { return rm(this.file(rel)); }
   async write(rel: string, text: string): Promise<void> {
     await mkdir(path.dirname(this.file(rel)), { recursive: true });
     await writeFile(this.file(rel), text);

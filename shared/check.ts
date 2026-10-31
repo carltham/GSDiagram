@@ -3,6 +3,7 @@
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { parseDiagram, usedProcesses } from './diagram';
+import { describedDiagrams } from './generate';
 import { readProcesses } from './processes';
 import { idPattern, Project } from './project';
 import { Diagram, Process } from './types';
@@ -35,6 +36,7 @@ export function checkProject(project: Project): Finding[] {
   const findings: Finding[] = [];
   const processes = project.processes ? readProcesses(project.processes.text, idPattern(project.config)) : undefined;
   const used = new Set<string>();
+  const sources = new Set(describedDiagrams(project).map(d => d.source));
 
   if (project.config.processesFile && !project.processes)
     findings.push({ file: path.join(project.folder, 'config.json'), line: 0, column: 0, length: 1, severity: 'error',
@@ -49,6 +51,10 @@ export function checkProject(project: Project): Finding[] {
       findings.push({ file, ...place(text, at ? +at[1] : 0, 1), severity: 'error', message: `Not a diagram: ${(e as Error).message}` });
       continue;
     }
+
+    if (d.source && !sources.has(d.source))
+      findings.push({ file, ...locate(text, 'source', d.source), severity: 'warning',
+        message: `The source ${d.source} of this diagram is gone. Update diagrams draws it again when it is back.` });
 
     const ids = new Set<string>();
     for (const n of d.nodes) {

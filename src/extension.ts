@@ -4,7 +4,9 @@ import path from 'node:path';
 import * as vscode from 'vscode';
 import { acceptChanges } from '../shared/check';
 import { isInside, resolveDataFolder } from '../shared/folder';
+import { Change, describedDiagrams, planDiagrams } from '../shared/generate';
 import { readConfig, writeConfig } from '../shared/project';
+import { DEFAULT_ARCHITECTURE_FOLDER } from '../shared/types';
 import { Checker } from './check';
 import { DiagramEditor, replaceText, VIEW_TYPE } from './editor';
 import { folderSettingOf, pickWorkspaceFolder } from './folder';
@@ -47,6 +49,9 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showErrorMessage(`GSDiagram: ${(e as Error).message}`);
       }
     }),
+
+    vscode.commands.registerCommand('gsdiagram.generate', () => drawFromArchitecture(checker, false)),
+    vscode.commands.registerCommand('gsdiagram.update', () => drawFromArchitecture(checker, true)),
 
     vscode.commands.registerCommand('gsdiagram.renderPng', () => {
       if (!editor.renderPng()) vscode.window.showErrorMessage('GSDiagram: open a diagram first.');
@@ -96,6 +101,40 @@ export function activate(context: vscode.ExtensionContext) {
 
   checker.run();
   return { checker };
+}
+
+// Generate, or Update, in every workspace folder whose architecture files describe diagrams. The files change like an
+// edit would, so Undo works, and are saved.
+async function drawFromArchitecture(checker: Checker, update: boolean) {
+  await checker.run();
+  const results = checker.all().filter(c => describedDiagrams(c.project).length > 0);
+  if (results.length === 0) {
+    const folder = checker.all()[0]?.project.config.architectureFolder || DEFAULT_ARCHITECTURE_FOLDER;
+    return vscode.window.showErrorMessage(`GSDiagram: no diagrams are described in ${folder}.`);
+  }
+  const changes: Change[] = results.flatMap(c => planDiagrams(c.project, { update }));
+  if (changes.length === 0) return vscode.window.showInformationMessage('GSDiagram: the diagrams are up to date.');
+
+  const edit = new vscode.WorkspaceEdit();
+  for (const c of changes) {
+    const uri = vscode.Uri.file(c.file);
+    if (c.created) {
+      edit.createFile(uri, { ignoreIfExists: false });
+      edit.insert(uri, new vscode.Position(0, 0), c.text);
+    } else {
+      const document = await vscode.workspace.openTextDocument(uri);
+      edit.replace(uri, new vscode.Range(0, 0, document.lineCount, 0), c.text);
+    }
+  }
+  if (!await vscode.workspace.applyEdit(edit)) return vscode.window.showErrorMessage('GSDiagram: the diagrams could not be changed.');
+  for (const c of changes) await (await vscode.workspace.openTextDocument(vscode.Uri.file(c.file))).save();
+
+  const created = changes.filter(c => c.created).map(c => path.basename(c.file));
+  const updated = changes.filter(c => !c.created).map(c => path.basename(c.file));
+  vscode.window.showInformationMessage(['GSDiagram:',
+    created.length ? `created ${created.join(', ')}` : '',
+    updated.length ? `${created.length ? 'and ' : ''}updated ${updated.join(', ')}` : ''].filter(Boolean).join(' ') + '.');
+  checker.soon();
 }
 
 export function deactivate() {}

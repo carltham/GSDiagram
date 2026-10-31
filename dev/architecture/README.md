@@ -1,0 +1,25 @@
+# GSDiagram architecture
+
+The architecture of GSDiagram as it is built: a free VS Code extension, with a command line, that draws a project's processes as diagrams, keeps them as files in the project, and checks them against the project's list of processes.
+
+It describes the code as it is. Where the code and README.md disagree, the code is described, and the difference is an open point.
+
+## Index
+
+| File | Holds |
+|---|---|
+| [Context](context.md) | What GSDiagram is, who uses it, what it works with, and what goes in and out |
+| [Principles](principles.md) | The fixed decisions every part follows |
+| [Components](components.md) | The parts of the code, what each does, and how they depend on each other |
+| [Data](data.md) | Every file GSDiagram reads or writes, and its format |
+| [Flows](flows.md) | What happens, step by step, for each thing a user does |
+| [Decisions](decisions.md) | The choices of technology and design, and why |
+| [Quality](quality.md) | Testing, building, packaging, releasing, and the known limits |
+
+## Open points
+
+- **README.md describes another Generate.** It says Generate draws one diagram per `##` group of the processes file, records the titles it wrote in `titles`, and that Update keeps labels written by hand. The code draws from the architecture files instead, records the `source`, has no `titles`, and Update draws a generated diagram again from its source, so a label changed by hand in a generated diagram is replaced.
+- **Labels changed by hand in a generated diagram** are lost on Update. Only dragged positions and `drawn` are kept.
+- **A PNG from the editor and a PNG from the command line differ.** The editor draws in the VS Code theme's colours, so a dark theme gives a dark picture; the command line always draws in the light colours.
+- **A self-loop's label** can be drawn across its own loop.
+- **Roles:** GSDiagram has none. Everyone who opens the project can do everything.

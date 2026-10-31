@@ -26,6 +26,9 @@ export interface Diagram {
   edges: DiagramEdge[];
   // The text of each process as it was when the diagram was drawn, as a short hash.
   drawn?: Record<string, string>;
+  // Where an architecture file describes the diagram, for a generated one: the file, relative to the project, and
+  // the heading's anchor. Update draws it again from there.
+  source?: string;
 }
 
 export interface Config {
@@ -33,7 +36,11 @@ export interface Config {
   processesFile?: string;
   // The pattern of a process id, as a regular expression.
   idPattern?: string;
+  // The folder of the architecture files that describe the diagrams, relative to the project. dev/architecture unless set.
+  architectureFolder?: string;
 }
+
+export const DEFAULT_ARCHITECTURE_FOLDER = 'dev/architecture';
 
 export const DEFAULT_ID_PATTERN = '[A-Z]{4}\\d+';
 

@@ -1,0 +1,150 @@
+# Flows
+
+What happens, step by step, for each thing a user does.
+
+## The extension starts
+
+1. VS Code starts the extension once it has started itself.
+2. The extension registers the diagram editor, the lenses and hover for Markdown files, and the commands.
+3. It starts watching: open documents of diagrams, `config.json` files, and Markdown files as they are typed and saved; the same files as they are created, changed, and deleted on disk; the workspace folders; and the `gsdiagram` settings.
+4. It runs the check once. A workspace folder without a data folder, or with an empty one, gives no findings and has nothing written to it.
+
+## The check runs
+
+1. Something that can change the check happens: a diagram, a `config.json`, or a Markdown file is typed in, saved, created, changed, or deleted; a workspace folder is added or removed; a `gsdiagram` setting changes. Or the user runs **GSDiagram: Check**.
+2. 300 ms after the last such change, the checker loads each workspace folder's project. The text of an open document is used in place of its file, so unsaved typing counts.
+3. A data folder outside the project is refused: an error message, once per folder, and that folder is left out.
+4. Each project is checked: every diagram file, the processes file, and the sources of generated diagrams.
+5. The findings replace the last ones in the Problems panel, each at its place in its file.
+6. Open diagram editors get the processes again, and the lenses are asked for again.
+7. For **GSDiagram: Check**, a message gives the count of errors, warnings, and processes in no diagram.
+
+The findings:
+
+| Finding | Severity | Where |
+|---|---|---|
+| A diagram file that is not JSON, or has no `nodes` or `edges` list | Error | The diagram, at the fault when it can be found |
+| A node id used twice | Error | The node |
+| An arrow to or from a node that does not exist | Error | The arrow's `from` or `to` |
+| `processesFile` set, but the file is missing or outside the project | Error | `config.json` |
+| A process id that is not in the processes file | Warning | Where the diagram names it |
+| A process whose text has changed since the diagram was accepted | Warning | Where the diagram names it |
+| A generated diagram whose source is no longer described | Warning | The diagram's `source` |
+| A process that is in no diagram | Information | The process in the processes file |
+
+Without a processes file, nothing is checked against processes. A process the diagram uses but has never accepted gives no change warning.
+
+## A diagram is opened
+
+1. The user opens a `*.diagram.json` file. VS Code opens it in the GSDiagram editor, its default editor for these files.
+2. The editor creates the page and, when the page says it is ready, sends it the document's text, the processes of its workspace folder, and whether a processes file is set.
+3. The page reads the diagram. If it is not a diagram, the page shows why above the drawing and keeps the last drawing.
+4. The page measures the labels in the theme's font, lays the diagram out, and draws it in the theme's colours. A box or an arrow whose process is not in the processes file is drawn in the error colour.
+5. Whenever the document changes, by typing in it as text, by undo, or by any edit, and whenever the check has run, the editor sends the page the text and processes again, and the page draws again.
+
+**Reopen Editor With… → Text Editor** shows the JSON. Both editors work on the same document.
+
+## A box or an arrow is clicked
+
+1. The user clicks a box without moving it, or clicks an arrow.
+2. The page draws it as selected and shows its detail: the box's label, or the arrow's label with the ids it runs between, and then:
+   - its group, id, title, text, and **Open in the processes file**; or
+   - that it has no process; or
+   - that its process is not in the processes file; or
+   - its process id, and that no processes file is set.
+3. **Open in the processes file** opens the processes file beside the diagram, at the process's line.
+
+Clicking the background clears the selection.
+
+## A box is dragged
+
+1. The user presses on a box and moves the pointer more than 3 pixels. The box follows the pointer.
+2. On release, the page sends the new position, rounded to whole pixels.
+3. The editor reads the document, sets the box's `x` and `y`, and replaces the document's text with the diagram written again. The document is now changed, but not saved.
+4. The document change makes the page draw again. The box stays where it was dropped, and its arrows are drawn straight.
+5. Undo and redo move it back and forth. Saving writes the file.
+
+## Reset layout
+
+1. The user presses **Reset layout**.
+2. The editor removes `x` and `y` from every box. If no box had them, nothing changes and the file is left as it was written.
+3. The page draws again with the automatic layout.
+
+## Zoom
+
+**+** and **−** make the drawing 1.25 times larger or smaller, between a quarter and four times its size. The file does not change.
+
+## Render PNG, in the editor
+
+1. The user presses **Render PNG**, or runs **GSDiagram: Render PNG** with a diagram editor in front.
+2. The page draws the diagram again, at twice its size, without the selection, in the theme's colours, and turns it into a PNG.
+3. The editor writes it next to the diagram, `orders.diagram.json` to `orders.png`, replacing one that is there, and says it is saved.
+
+Without a diagram editor in front, the command says to open a diagram first.
+
+## Accept process changes
+
+1. The user runs **GSDiagram: Accept process changes** with a diagram open, in the GSDiagram editor or as text.
+2. The check runs first.
+3. For every process the diagram uses that is in the processes file, the current hash of its title and text is recorded in `drawn`, which is written anew. Ids not in the processes file are left out of it.
+4. The document is changed, like an edit; saving writes it. The change warnings for that diagram go away.
+
+Without a diagram open, it says to open one; without a processes file, it says none is set.
+
+## Generate diagrams
+
+1. The user runs **GSDiagram: Generate diagrams**.
+2. The check runs first.
+3. If no workspace folder's architecture files describe a diagram, a message says so and nothing changes.
+4. For each described diagram that no diagram file has as its `source`, a file is planned in the data folder: named by the marker's name; or else by its heading; or else by its file's name. If that name is taken and the marker gave none, the file's name is put in front, `orders-flow`; if it is still taken, `-2`, `-3` are added.
+5. A diagram that is there is never changed by Generate.
+6. All files are created in one edit, then saved. A message lists the files created, or says the diagrams are up to date.
+
+## Update diagrams
+
+As Generate, and also:
+
+1. Each diagram file whose `source` is still described is drawn again from it: its title, direction, nodes, and arrows are the source's.
+2. A box that is still there, by its id, keeps its dragged position. `drawn` is kept.
+3. Everything else the file had is replaced, including labels changed by hand and other fields.
+4. A file whose text would not change is not touched. A diagram without a `source`, drawn by hand, is never touched.
+5. The changes are one edit, so they can be undone, and are saved.
+
+## See where a process is drawn
+
+1. The user opens the processes file of a workspace folder.
+2. Above each process is a lens per diagram that uses it, `in orders`, which opens that diagram in the GSDiagram editor; or `in no diagram`, which does nothing.
+3. Pointing at a process's line shows the same, with links that open the diagrams.
+4. The lenses follow the check: a process typed in gets its lens, and a new diagram shows up above its processes.
+
+Other Markdown files have no lenses and no hover.
+
+## Choose data folder
+
+1. The user runs **GSDiagram: Choose data folder**, and picks the workspace folder when there are several.
+2. A folder picker opens at the project.
+3. A folder outside the project is refused with a message. Cancelling changes nothing.
+4. The folder, relative to the project, is stored in the project's `.vscode/settings.json` as `gsdiagram.folder`.
+5. The check runs with the new data folder.
+
+## Set processes file
+
+1. The user runs **GSDiagram: Set processes file**, and picks the workspace folder when there are several.
+2. A file picker for Markdown files opens at the project.
+3. A file outside the project is refused with a message. Cancelling changes nothing.
+4. The file, relative to the project, is written as `processesFile` into `config.json`, keeping its other fields. The data folder is created if it is not there.
+5. The check runs against the new processes file.
+
+## The command line
+
+Run as `node dist/cli.js <command> <project>`, after a build. The project is the current folder when left out. The data folder is read from the project's `.vscode/settings.json`.
+
+| Command | What it does |
+|---|---|
+| `check` | Prints each finding as `file:line:column: severity: message`, then the counts. Exits with 1 when there are errors or warnings, else 0. |
+| `render` | Opens the render page in headless Chrome, `/usr/bin/google-chrome` unless `--chrome <path>` names another, and writes each diagram's PNG next to it, at twice its size, in the light colours. |
+| `accept` | Accepts process changes in every diagram, and writes them. Stops when no processes file is set. |
+| `generate` | As Generate diagrams, writing the files directly. Stops when no diagrams are described. |
+| `update` | As Update diagrams, writing the files directly. Stops when no diagrams are described. |
+
+An unknown command prints the usage and exits with 2. Any failure prints its message and exits with 1.
