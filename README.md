@@ -95,12 +95,17 @@ npm install
 npm run build          # into dist/
 npm test               # unit tests
 npm run test:vscode    # the extension in a test instance of VS Code
+npm run test:ui        # the UI, driven by Playwright in a test instance of VS Code
 npm run package        # gsdiagram-<version>.vsix
 ```
 
+The UI tests are in `dev/testing/playwright`, a Node project of its own with its own Playwright: install it once with `npm --prefix dev/testing/playwright install`. Each test starts its own VS Code on a fresh copy of `test/fixture`, then clicks, drags, types, and uses the command palette, the Problems panel, the lenses, and the open dialogs as a user would. On Linux, `xvfb-run -a npm run test:ui` keeps the windows off the screen. A failed test leaves a screenshot and a trace in `dev/testing/playwright/test-results/`; `npm --prefix dev/testing/playwright run report` shows them.
+
+The tests that change files on disk need VS Code's file watcher. On Linux it stops working when the user's inotify instances run out (`fs.inotify.max_user_instances`, often 128); close other editors, or raise the limit.
+
 F5 in VS Code opens a window with the extension and `test/fixture`. Install a package with `code --install-extension gsdiagram-<version>.vsix`.
 
-When the tests are started from a terminal inside VS Code, unset `ELECTRON_RUN_AS_NODE` first, or the test instance starts as plain Node.
+When `npm run test:vscode` is started from a terminal inside VS Code, unset `ELECTRON_RUN_AS_NODE` first, or the test instance starts as plain Node. The UI tests clear it themselves.
 
 ## Licence
 

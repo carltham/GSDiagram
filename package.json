@@ -73,6 +73,7 @@
     "watch": "node esbuild.mjs --watch",
     "test": "node esbuild.mjs && node --test \"dist/test/*.test.js\"",
     "test:vscode": "node esbuild.mjs && node dist/test/vscode/run.js",
+    "test:ui": "node esbuild.mjs && npm --prefix dev/testing/playwright test --",
     "check": "node dist/cli.js check",
     "render": "node dist/cli.js render",
     "accept": "node dist/cli.js accept",

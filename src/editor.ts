@@ -89,7 +89,10 @@ export class DiagramEditor implements vscode.CustomTextEditorProvider {
     } catch {
       return;
     }
+    // An edit that changes nothing, such as Reset layout with no dragged boxes, leaves the file as it is written.
+    const before = JSON.stringify(d);
     f(d);
+    if (JSON.stringify(d) === before) return;
     await replaceText(document, JSON.stringify(d, null, 2) + '\n');
   }
 

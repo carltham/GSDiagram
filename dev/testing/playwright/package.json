@@ -1,0 +1,20 @@
+{
+  "name": "gsdiagram-playwright",
+  "description": "The UI tests of GSDiagram: the real VS Code with the extension, driven by Playwright. A Node project of its own, apart from the extension's.",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report test-results/report",
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "^22.10.0",
+    "@vscode/test-electron": "^2.4.1",
+    "typescript": "^5.7.0"
+  }
+}
