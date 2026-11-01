@@ -5,9 +5,18 @@ What happens, step by step, for each thing a user does.
 ## The extension starts
 
 1. VS Code starts the extension once it has started itself.
-2. The extension registers the diagram editor, the lenses and hover for Markdown files, and the commands.
+2. The extension registers the diagram editor, the lenses and hover for Markdown files, the side bar, and the commands.
 3. It starts watching: open documents of diagrams, `config.json` files, and Markdown files as they are typed and saved; the same files as they are created, changed, and deleted on disk; the workspace folders; and the `gsdiagram` settings.
 4. It runs the check once. A workspace folder without a data folder, or with an empty one, gives no findings and has nothing written to it.
+
+## The side bar is opened
+
+1. The user clicks the GSDiagram icon in the Activity Bar.
+2. `GSDiagram/extension/sidebar` lists the diagrams of each workspace folder from the last check: by name, `generated` when it has a `source`, and its count of findings, marked by the worst.
+3. It lists the model of the architecture files, read by `GSDiagram/shared/model`: Context, Components by layer, Data, Flows, and Rules, each with its count, and last the count of findings about the architecture.
+4. A list with nothing in it shows its welcome instead: for Diagrams, Generate diagrams, Set processes file, Choose data folder, and Open the README; for Architecture, what to write, and Open the README.
+5. A click on a diagram opens it in the GSDiagram editor; on an element of the model, its file at its line; on the count of findings, the Problems panel.
+6. Each time the check has run, both lists are built again.
 
 ## The check runs
 

@@ -35,11 +35,72 @@
         "priority": "default"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "gsdiagram",
+          "title": "GSDiagram",
+          "icon": "dist/sidebar.svg"
+        }
+      ]
+    },
+    "views": {
+      "gsdiagram": [
+        {
+          "id": "gsdiagram.diagrams",
+          "name": "Diagrams"
+        },
+        {
+          "id": "gsdiagram.architecture",
+          "name": "Architecture"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "gsdiagram.diagrams",
+        "contents": "No diagrams in this project yet.\n[Generate diagrams](command:gsdiagram.generate)\nGenerate draws the diagrams that the architecture files in dev/architecture describe: the context, the components, each flow, and the diagrams drawn in them.\n[Set processes file](command:gsdiagram.setProcessesFile)\n[Choose data folder](command:gsdiagram.chooseFolder)\nOr write a diagram by hand: a *.diagram.json file in the data folder, .gsdiagram unless chosen. [Open the README](command:gsdiagram.openReadme) to see how."
+      },
+      {
+        "view": "gsdiagram.architecture",
+        "contents": "The architecture files in dev/architecture describe nothing yet. Describe the components in a table with Component and Uses columns, and the flows as numbered steps in a file about flows; GSDiagram reads them as a model, checks it, and draws it.\n[Open the README](command:gsdiagram.openReadme)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "gsdiagram.generate",
+          "when": "view == gsdiagram.diagrams",
+          "group": "navigation@1"
+        },
+        {
+          "command": "gsdiagram.update",
+          "when": "view == gsdiagram.diagrams",
+          "group": "navigation@2"
+        },
+        {
+          "command": "gsdiagram.check",
+          "when": "view == gsdiagram.diagrams",
+          "group": "navigation@3"
+        },
+        {
+          "command": "gsdiagram.analyse",
+          "when": "view == gsdiagram.architecture",
+          "group": "navigation@1"
+        },
+        {
+          "command": "gsdiagram.check",
+          "when": "view == gsdiagram.architecture",
+          "group": "navigation@2"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "gsdiagram.check",
         "title": "Check",
-        "category": "GSDiagram"
+        "category": "GSDiagram",
+        "icon": "$(check-all)"
       },
       {
         "command": "gsdiagram.acceptChanges",
@@ -49,17 +110,20 @@
       {
         "command": "gsdiagram.analyse",
         "title": "Analyse architecture",
-        "category": "GSDiagram"
+        "category": "GSDiagram",
+        "icon": "$(search)"
       },
       {
         "command": "gsdiagram.generate",
         "title": "Generate diagrams",
-        "category": "GSDiagram"
+        "category": "GSDiagram",
+        "icon": "$(add)"
       },
       {
         "command": "gsdiagram.update",
         "title": "Update diagrams",
-        "category": "GSDiagram"
+        "category": "GSDiagram",
+        "icon": "$(refresh)"
       },
       {
         "command": "gsdiagram.renderPng",
@@ -74,6 +138,11 @@
       {
         "command": "gsdiagram.setProcessesFile",
         "title": "Set processes file",
+        "category": "GSDiagram"
+      },
+      {
+        "command": "gsdiagram.openReadme",
+        "title": "Open the README",
         "category": "GSDiagram"
       }
     ],

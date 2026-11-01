@@ -27,9 +27,10 @@ Runs in VS Code's extension host.
 
 | Component | What it does | Uses |
 |---|---|---|
-| `GSDiagram/extension/extension` | Starts the extension once VS Code has started. Registers the editor, the lenses and hover, and the commands. Watches the files and settings that can change the check. Applies Generate and Update as one edit, and saves the files. Writes the model for Analyse architecture. | `GSDiagram/extension/check`, `GSDiagram/extension/editor`, `GSDiagram/extension/links`, `GSDiagram/extension/folder`, `GSDiagram/shared/check`, `GSDiagram/shared/folder`, `GSDiagram/shared/generate`, `GSDiagram/shared/model`, `GSDiagram/shared/project`, `GSDiagram/shared/types` |
+| `GSDiagram/extension/extension` | Starts the extension once VS Code has started. Registers the editor, the lenses and hover, the side bar, and the commands. Watches the files and settings that can change the check. Applies Generate and Update as one edit, and saves the files. Writes the model for Analyse architecture. | `GSDiagram/extension/check`, `GSDiagram/extension/editor`, `GSDiagram/extension/links`, `GSDiagram/extension/sidebar`, `GSDiagram/extension/folder`, `GSDiagram/shared/check`, `GSDiagram/shared/folder`, `GSDiagram/shared/generate`, `GSDiagram/shared/model`, `GSDiagram/shared/project`, `GSDiagram/shared/types` |
 | `GSDiagram/extension/check` | The checker: runs the check on every workspace folder, 300 ms after the last change; puts the findings in the Problems panel; keeps, per folder, the project, its processes, which diagrams use each process, and the findings; tells the editors and the lenses when it has run. Shows a refused data folder once per folder. | `GSDiagram/extension/folder`, `GSDiagram/shared/check`, `GSDiagram/shared/diagram`, `GSDiagram/shared/processes`, `GSDiagram/shared/project`, `GSDiagram/shared/types` |
 | `GSDiagram/extension/editor` | The custom text editor for `*.diagram.json`: the page, the messages to and from it, the changes to the document, the PNG file, and opening a process. Knows which diagram editor is in front. | `GSDiagram/extension/check`, `GSDiagram/shared/diagram`, `GSDiagram/shared/types`; talks to `GSDiagram/webview/main` by messages |
+| `GSDiagram/extension/sidebar` | The side bar behind the GSDiagram icon in the Activity Bar: the Diagrams list, with whether each was generated and its findings, and the Architecture list, the model's context, components by layer, data, flows, and rules, each with its findings and its place. Both are built again each time the check has run. | `GSDiagram/extension/check`, `GSDiagram/shared/check`, `GSDiagram/shared/diagram`, `GSDiagram/shared/generate`, `GSDiagram/shared/model`, `GSDiagram/shared/project`, `GSDiagram/shared/types` |
 | `GSDiagram/extension/links` | The lenses above each process in the processes file, and the hover over it. | `GSDiagram/extension/check`, `GSDiagram/shared/project` |
 | `GSDiagram/extension/folder` | Reads the setting per workspace folder, loads a workspace folder's project with the text of open documents, and asks which folder when a command needs one and there are several. | `GSDiagram/shared/project` |
 
@@ -60,6 +61,7 @@ Run in a browser: the editor's page in VS Code's webview, the render page in hea
 | `dist/webview.js` | `GSDiagram/webview/main` | Browser, minified, ELK included |
 | `dist/render.js` | `GSDiagram/webview/render` | Browser, minified, ELK included |
 | `dist/style.css`, `dist/render.html` | `GSDiagram/webview/` | Copied |
+| `dist/sidebar.svg` | `GSDiagram/extension/` | Copied: the icon in the Activity Bar |
 | `dist/test/` | `dev/testing/unit/`, `dev/testing/vscode/` | The tests |
 
-The package holds only `extension.js`, `webview.js`, `style.css`, `package.json`, `README.md`, and `LICENSE`. The command line and the render page are not in it; they are used from the repository.
+The package holds only `extension.js`, `webview.js`, `style.css`, `sidebar.svg`, `package.json`, `README.md`, and `LICENSE`. The command line and the render page are not in it; they are used from the repository.

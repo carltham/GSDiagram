@@ -2,6 +2,7 @@
 !dist/extension.js
 !dist/webview.js
 !dist/style.css
+!dist/sidebar.svg
 !package.json
 !README.md
 !LICENSE

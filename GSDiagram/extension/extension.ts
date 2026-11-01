@@ -13,6 +13,7 @@ import { Checker } from './check';
 import { DiagramEditor, replaceText, VIEW_TYPE } from './editor';
 import { folderSettingOf, pickWorkspaceFolder } from './folder';
 import { ProcessLinks } from './links';
+import { ArchitectureTree, DiagramTree } from './sidebar';
 
 const relative = (root: string, p: string) => path.relative(root, p).split(path.sep).join('/');
 
@@ -30,6 +31,10 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerCustomEditorProvider(VIEW_TYPE, editor, { webviewOptions: { retainContextWhenHidden: true } }),
     vscode.languages.registerCodeLensProvider(markdown, links),
     vscode.languages.registerHoverProvider(markdown, links),
+    vscode.window.createTreeView('gsdiagram.diagrams', { treeDataProvider: new DiagramTree(checker) }),
+    vscode.window.createTreeView('gsdiagram.architecture', { treeDataProvider: new ArchitectureTree(checker), showCollapseAll: true }),
+    vscode.commands.registerCommand('gsdiagram.openReadme',
+      () => vscode.commands.executeCommand('markdown.showPreview', vscode.Uri.joinPath(context.extensionUri, 'README.md'))),
 
     vscode.commands.registerCommand('gsdiagram.check', async () => {
       vscode.window.showInformationMessage(`GSDiagram: ${summary(await checker.run())}`);

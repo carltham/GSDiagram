@@ -236,7 +236,9 @@ test.describe('beside the JSON in a text editor', () => {
   test('a drag in the diagram shows up in the text', async ({ vscode }) => {
     const d = vscode.diagram();
     await d.drag('sent', 0, 120);
-    const { x, y } = await d.position('sent');
+    // The file holds the dropped position in whole pixels; the box may still be where the pointer left it.
+    const dropped = await d.position('sent');
+    const x = Math.round(dropped.x), y = Math.round(dropped.y);
     // The text editor beside shows only the lines in view; its find widget searches all of them.
     const text = vscode.page.locator('.editor-group-container').nth(1);
     await expect(await vscode.find(`"x": ${x},`, text)).toHaveText('1 of 1');

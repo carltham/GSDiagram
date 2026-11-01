@@ -62,6 +62,15 @@ A `*.diagram.json` file opens in the diagram editor. **Reopen Editor With… →
 - **Render PNG** saves the diagram as a PNG next to it.
 - A process id that is not in the processes file is drawn in red.
 
+## The side bar
+
+The GSDiagram icon in the Activity Bar, three boxes with arrows, opens GSDiagram's side bar:
+
+- **Diagrams:** every diagram of the project, whether it was generated, and its warnings. A click opens it. The title bar has Generate, Update, and Check.
+- **Architecture:** the model of the architecture files, see below: the context, the components by layer, the data, the flows, the rules, and the count of findings. A click goes to where each is written; one with a finding is marked. The title bar has Analyse architecture and Check.
+
+A project without diagrams shows how to get started instead: Generate diagrams, Set processes file, Choose data folder, and the README. Both lists follow the check, so they change as the files are typed.
+
 ## The check
 
 It runs whenever a diagram, `config.json`, or a Markdown file changes, and on **GSDiagram: Check**. Findings go to the Problems panel:

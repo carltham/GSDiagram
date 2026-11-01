@@ -239,6 +239,24 @@ export class VSCode {
   problem(text: string | RegExp): Locator { return this.problems().filter({ hasText: text }); }
 
   // The page inside the GSDiagram editor in front.
+  // The GSDiagram side bar, opened from its icon in the Activity Bar, and its views: Diagrams and Architecture.
+  async openSideBar(): Promise<void> {
+    await this.page.locator('.activitybar .action-item a[aria-label^="GSDiagram"]').click();
+    await expect(this.view('Diagrams')).toBeVisible();
+  }
+  view(name: string): Locator {
+    return this.page.locator('.part.sidebar .pane', { has: this.page.locator('.pane-header', { hasText: name }) });
+  }
+  viewRow(view: string, label: string | RegExp): Locator {
+    return this.view(view).locator('.monaco-list-row', { has: this.page.locator('.label-name', { hasText: label }) });
+  }
+  // A button in a view's title bar; it shows when the pointer is over the view.
+  async viewAction(view: string, title: string): Promise<void> {
+    await this.view(view).locator('.pane-header').hover();
+    await this.view(view).locator(`.pane-header .actions a[aria-label="${title}"]`).click();
+  }
+  welcome(view: string): Locator { return this.view(view).locator('.welcome-view-content'); }
+
   diagram(): Diagram {
     // VS Code lays webviews over the editors, outside them; the one shown is the one in front.
     const frame = this.page.locator('iframe.webview.ready').filter({ visible: true }).contentFrame()

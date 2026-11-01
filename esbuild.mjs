@@ -23,6 +23,7 @@ const builds = [
 await mkdir('dist', { recursive: true });
 await copyFile('GSDiagram/webview/style.css', 'dist/style.css');
 await copyFile('GSDiagram/webview/render.html', 'dist/render.html');
+await copyFile('GSDiagram/extension/sidebar.svg', 'dist/sidebar.svg');
 
 if (watch) {
   for (const b of builds) await (await esbuild.context(b)).watch();
