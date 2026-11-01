@@ -9,11 +9,11 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { acceptChanges, checkProject, modelSummary, plural, summary } from '../shared/check';
-import { describedDiagrams, planDiagrams, projectModel } from '../shared/generate';
+import { architecturesOf, drawnArchitectures, foldersOf, modelOf } from '../shared/architectures';
+import { planDiagrams } from '../shared/generate';
 import { MODEL_FILE, writeModel } from '../shared/model';
 import { readProcesses } from '../shared/processes';
 import { configuredFolder, idPattern, loadProject } from '../shared/project';
-import { DEFAULT_ARCHITECTURE_FOLDER } from '../shared/types';
 
 async function main() {
   const [command, root = '.', ...rest] = process.argv.slice(2);
@@ -28,13 +28,15 @@ async function main() {
     process.exitCode = count('error') + count('warning') > 0 ? 1 : 0;
 
   } else if (command === 'analyse') {
-    const model = projectModel(project);
-    const folder = project.config.architectureFolder || DEFAULT_ARCHITECTURE_FOLDER;
-    if (model.elements.length === 0) throw new Error(`Nothing to analyse in ${folder}.`);
-    await mkdir(project.folder, { recursive: true });
-    const file = path.join(project.folder, MODEL_FILE);
-    await writeFile(file, writeModel(model));
-    console.log(`wrote ${path.relative(projectRoot, file)}: ${modelSummary(model)}`);
+    // Each architecture's model goes into its own subfolder of the data folder.
+    const analysed = architecturesOf(project).map(a => ({ a, model: modelOf(project, a) })).filter(({ model }) => model.elements.length > 0);
+    if (analysed.length === 0) throw new Error(`Nothing to analyse in ${foldersOf(project)}.`);
+    for (const { a, model } of analysed) {
+      await mkdir(a.diagrams, { recursive: true });
+      const file = path.join(a.diagrams, MODEL_FILE);
+      await writeFile(file, writeModel(model));
+      console.log(`wrote ${path.relative(projectRoot, file)}${a.archived ? ', archived' : ''}: ${modelSummary(model)}`);
+    }
     const findings = checkProject(project).filter(f => f.about === 'architecture');
     for (const f of findings) console.log(`${path.relative(projectRoot, f.file)}:${f.line + 1}:${f.column + 1}: ${f.severity}: ${f.message}`);
     const warnings = findings.filter(f => f.severity === 'warning').length;
@@ -49,8 +51,7 @@ async function main() {
     }
 
   } else if (command === 'generate' || command === 'update') {
-    if (describedDiagrams(project).length === 0)
-      throw new Error(`No diagrams are described in ${project.config.architectureFolder || DEFAULT_ARCHITECTURE_FOLDER}.`);
+    if (drawnArchitectures(project).length === 0) throw new Error(`No diagrams are described in ${foldersOf(project)}.`);
     const changes = planDiagrams(project, { update: command === 'update' });
     for (const c of changes) {
       await mkdir(path.dirname(c.file), { recursive: true });

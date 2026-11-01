@@ -106,17 +106,17 @@ Without a diagram open, it says to open one; without a processes file, it says n
 2. The check runs first; `GSDiagram/shared/review` adds its findings about the architecture to the Problems panel.
 3. If no workspace folder's architecture files hold anything for the model, a message says so and nothing is written.
 4. For each workspace folder, `GSDiagram/extension/extension` asks `GSDiagram/shared/generate` for the model, which `GSDiagram/shared/model` reads from the architecture files.
-5. `GSDiagram/extension/extension` writes the model to `architecture.json` in the data folder, creating the folder if it is not there.
+5. `GSDiagram/extension/extension` writes each architecture's model to `architecture.json` in its folder of the data folder, creating it if it is not there. An archived architecture is analysed too, but not checked.
 6. A message says what the model holds and how many warnings and notes are in the Problems panel.
 
 ## Generate diagrams
 
-1. The user runs **GSDiagram: Generate diagrams**.
+1. The user runs **GSDiagram: Generate diagrams**. A progress bar shows in a notification and on top of the Diagrams list, with each step.
 2. The check runs first.
 3. If no workspace folder's architecture files describe a diagram, a message says so and nothing changes.
-4. For each described diagram that no diagram file has as its `source`, a file is planned in the data folder: named by the marker's name; or else by its heading; or else by its file's name. If that name is taken and the marker gave none, the file's name is put in front, `orders-flow`; if it is still taken, `-2`, `-3` are added.
+4. For each architecture that `GSDiagram/shared/architectures` finds, and that is not archived, and for each diagram it describes that no diagram file has as its `source`, a file is planned in the architecture's folder of the data folder: named by the marker's name; or else by its heading; or else by its file's name. If that name is taken and the marker gave none, the file's name is put in front, `orders-flow`; if it is still taken, `-2`, `-3` are added.
 5. A diagram that is there is never changed by Generate.
-6. All files are created in one edit, then saved. A message lists the files created, or says the diagrams are up to date.
+6. `GSDiagram/extension/extension` writes each new file to disk without opening it; the progress bar counts them, `saving orders.diagram.json, 3 of 15`. When it is done, a message lists the files created, or says the diagrams are up to date.
 
 ## Update diagrams
 
@@ -126,7 +126,23 @@ As Generate, and also:
 2. A box that is still there, by its id, keeps its dragged position. `drawn` is kept.
 3. Everything else the file had is replaced, including labels changed by hand and other fields.
 4. A file whose text would not change is not touched. A diagram without a `source`, drawn by hand, is never touched.
-5. The changes are one edit, so they can be undone, and are saved.
+5. A diagram open in an editor changes in one edit, so its editor follows and the change can be undone, and is saved. Every other file is written to disk without opening it.
+
+## Add an architecture folder
+
+1. The user runs **GSDiagram: Add architecture folder**, or presses its button in the Architecture list's title bar, and picks the workspace folder when there are several.
+2. A folder picker opens at the project. A folder outside the project is refused with a message; cancelling changes nothing.
+3. `GSDiagram/extension/architectures` writes the folder into `architectureFolders` in `config.json`, after the ones there, keeping the other fields. The check runs, and the side bar lists the new architecture, and each of its subfolders, as groups of their own.
+
+**Remove architecture folder** takes a folder off the list again; a subfolder cannot be removed, and the last folder neither.
+
+## Archive an architecture
+
+1. The user presses **Mark architecture archived** on an architecture's row in the side bar, or runs the command and picks the architecture.
+2. `GSDiagram/extension/architectures` writes `"<folder>": true` into `archived` in `config.json`.
+3. The check runs. The architecture's findings, and those of its diagrams, leave the Problems panel; its row says archived; Generate and Update leave it alone.
+
+**Mark architecture current** writes `false`, which also brings back an architecture archived by its folder's name.
 
 ## See where a process is drawn
 

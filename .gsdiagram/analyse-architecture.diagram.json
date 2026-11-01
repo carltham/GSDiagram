@@ -1,0 +1,71 @@
+{
+  "title": "Analyse architecture",
+  "direction": "DOWN",
+  "source": "dev/architecture/flows.md#analyse-architecture",
+  "nodes": [
+    {
+      "id": "start",
+      "label": "Start",
+      "kind": "start"
+    },
+    {
+      "id": "step1",
+      "label": "The user runs GSDiagram: Analyse architecture"
+    },
+    {
+      "id": "step2",
+      "label": "The check runs first"
+    },
+    {
+      "id": "step3",
+      "label": "If no workspace folder's architecture files hol…"
+    },
+    {
+      "id": "step4",
+      "label": "For each workspace folder, GSDiagram/extension/…"
+    },
+    {
+      "id": "step5",
+      "label": "GSDiagram/extension/extension writes the model…"
+    },
+    {
+      "id": "step6",
+      "label": "A message says what the model holds and how man…"
+    },
+    {
+      "id": "end",
+      "label": "End",
+      "kind": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "step1"
+    },
+    {
+      "from": "step1",
+      "to": "step2"
+    },
+    {
+      "from": "step2",
+      "to": "step3"
+    },
+    {
+      "from": "step3",
+      "to": "step4"
+    },
+    {
+      "from": "step4",
+      "to": "step5"
+    },
+    {
+      "from": "step5",
+      "to": "step6"
+    },
+    {
+      "from": "step6",
+      "to": "end"
+    }
+  ]
+}

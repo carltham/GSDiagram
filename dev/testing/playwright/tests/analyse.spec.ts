@@ -24,9 +24,9 @@ test('Analyse writes the model of the architecture files, and says what it holds
   await vscode.write('dev/architecture/components.md', COMPONENTS);
   await vscode.write('dev/architecture/principles.md', RULES);
   await vscode.command('GSDiagram: Analyse architecture');
-  await expect(vscode.notification('GSDiagram: 3 components, 1 rule; 0 warnings and 1 note in the Problems panel. Written to .gsdiagram/architecture.json.'))
+  await expect(vscode.notification('GSDiagram: 3 components, 1 rule; 0 warnings and 1 note in the Problems panel. Written to .gsdiagram/architecture/architecture.json.'))
     .toBeVisible();
-  const model = JSON.parse(await vscode.read('.gsdiagram/architecture.json'));
+  const model = JSON.parse(await vscode.read('.gsdiagram/architecture/architecture.json'));
   expect(model.links).toContainEqual({ from: 'component:shared/check', to: 'component:shared/types', kind: 'uses', at: 'dev/architecture/components.md:8' });
 });
 
@@ -50,8 +50,8 @@ test('a use against a rule is a warning in the Problems panel, and goes away whe
 test('Generate draws the components of the model, with their uses', async ({ vscode }) => {
   await vscode.write('dev/architecture/components.md', COMPONENTS);
   await vscode.command('GSDiagram: Generate diagrams');
-  await expect(vscode.notification('GSDiagram: created components.diagram.json.')).toBeVisible();
-  await vscode.open('.gsdiagram/components.diagram.json');
+  await expect(vscode.notification('GSDiagram: created architecture/components.diagram.json.')).toBeVisible();
+  await vscode.open('.gsdiagram/architecture/components.diagram.json');
   const d = vscode.diagram();
   await d.waitForDrawing();
   await expect(d.title()).toHaveText('Components');

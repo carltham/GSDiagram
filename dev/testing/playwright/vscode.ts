@@ -255,6 +255,12 @@ export class VSCode {
     await this.view(view).locator('.pane-header').hover();
     await this.view(view).locator(`.pane-header .actions a[aria-label="${title}"]`).click();
   }
+  // A button on a row of a view; it shows when the pointer is over the row.
+  async rowAction(view: string, label: string | RegExp, title: string): Promise<void> {
+    const row = this.viewRow(view, label);
+    await row.hover();
+    await row.locator(`.actions a[aria-label="${title}"]`).click();
+  }
   welcome(view: string): Locator { return this.view(view).locator('.welcome-view-content'); }
 
   diagram(): Diagram {

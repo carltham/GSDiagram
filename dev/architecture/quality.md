@@ -8,9 +8,9 @@ Three levels, each run on its own:
 
 | Level | Run with | What | Tests |
 |---|---|---|---|
-| **Unit** | `npm test` | The shared code in Node: reading processes, the data folder and the setting, every finding of the check, Accept, the layout, reading architecture files, the model and its review, Generate and Update. | 43, in `dev/testing/unit/*.test.ts` |
+| **Unit** | `npm test` | The shared code in Node: reading processes, the data folder and the setting, every finding of the check, Accept, the layout, reading architecture files, the model and its review, several architectures, Generate and Update. | 51, in `dev/testing/unit/*.test.ts` |
 | **Extension** | `npm run test:vscode` | The extension in a test instance of VS Code, on `dev/testing/fixture`: findings reach the Problems panel, a diagram opens in the GSDiagram editor, the lenses. | 3, in `dev/testing/vscode/` |
-| **UI** | `npm run test:ui` | The real VS Code, driven by Playwright as a user would: the command palette, the Problems panel, the lenses and hover, the editors, the dialogs, the side bar, and the page inside the GSDiagram editor; clicks, drags, typing, undo, saving. | 65, in `dev/testing/playwright/tests/` |
+| **UI** | `npm run test:ui` | The real VS Code, driven by Playwright as a user would: the command palette, the Problems panel, the lenses and hover, the editors, the dialogs, the side bar, and the page inside the GSDiagram editor; clicks, drags, typing, undo, saving. | 70, in `dev/testing/playwright/tests/` |
 
 The UI tests by area:
 
@@ -20,9 +20,10 @@ The UI tests by area:
 | The check and Accept | 12 |
 | The processes file: lenses and hover | 8 |
 | The settings: Set processes file, Choose data folder, refusals | 7 |
-| Generate and Update | 6 |
+| Generate and Update | 7 |
 | Analyse architecture and its findings | 4 |
 | The side bar: its icon, both lists, the welcome, the title bar | 6 |
+| Several architectures: subfolders, archived, added folders, their diagrams | 4 |
 
 **The fixture,** `dev/testing/fixture/`, is a small project: a data folder with `config.json` and one diagram, and a processes file with three processes. The diagram uses one process that is not in the file, and the file has one process that is in no diagram, so a warning and an information finding are there from the start; the tests make the other findings themselves.
 

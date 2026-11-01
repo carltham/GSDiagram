@@ -1,6 +1,7 @@
 // Runs the check on every workspace folder, puts the findings in the Problems panel, and keeps what the editor and the links need.
 
 import * as vscode from 'vscode';
+import { isArchivedDiagram } from '../shared/architectures';
 import { checkProject, Finding } from '../shared/check';
 import { parseDiagram, usedProcesses } from '../shared/diagram';
 import { readProcesses } from '../shared/processes';
@@ -56,7 +57,8 @@ export class Checker implements vscode.Disposable {
       }
       const processes = project.processes ? readProcesses(project.processes.text, idPattern(project.config)) : new Map<string, Process>();
       const usage = new Map<string, string[]>();
-      for (const { file, text } of project.diagrams) {
+      // An archived architecture's diagrams do not count: a process only they use is in no diagram.
+      for (const { file, text } of project.diagrams.filter(d => !isArchivedDiagram(project, d.file, d.text))) {
         try {
           for (const id of usedProcesses(parseDiagram(text))) usage.set(id, [...(usage.get(id) ?? []), file]);
         } catch { /* reported by the check */ }

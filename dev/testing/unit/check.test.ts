@@ -16,7 +16,7 @@ function project(diagrams: string[], processes = md): Project {
   return {
     root: '/p', folder: '/p/.gsdiagram', config: { processesFile: 'ui.md' },
     diagrams: diagrams.map((text, i) => ({ file: `/p/.gsdiagram/d${i}.diagram.json`, text })),
-    processes: { file: '/p/ui.md', text: processes }, architecture: [],
+    processes: { file: '/p/ui.md', text: processes }, architectureFolders: [], architecture: [],
   };
 }
 

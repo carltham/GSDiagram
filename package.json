@@ -2,7 +2,7 @@
   "name": "gsdiagram",
   "displayName": "GSDiagram",
   "description": "Free diagrams of a project's processes, kept as files in the project and checked against its list of processes.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "gsdiagram",
   "license": "MIT",
   "repository": {
@@ -63,7 +63,7 @@
       },
       {
         "view": "gsdiagram.architecture",
-        "contents": "The architecture files in dev/architecture describe nothing yet. Describe the components in a table with Component and Uses columns, and the flows as numbered steps in a file about flows; GSDiagram reads them as a model, checks it, and draws it.\n[Open the README](command:gsdiagram.openReadme)"
+        "contents": "The architecture files in dev/architecture describe nothing yet. Describe the components in a table with Component and Uses columns, and the flows as numbered steps in a file about flows; GSDiagram reads them as a model, checks it, and draws it. Each subfolder is an architecture of its own; one named old, archive, or redundant is archived.\n[Add architecture folder](command:gsdiagram.addArchitectureFolder)\n[Open the README](command:gsdiagram.openReadme)"
       }
     ],
     "menus": {
@@ -71,6 +71,11 @@
         {
           "command": "gsdiagram.generate",
           "when": "view == gsdiagram.diagrams",
+          "group": "navigation@1"
+        },
+        {
+          "command": "gsdiagram.addArchitectureFolder",
+          "when": "view == gsdiagram.architecture",
           "group": "navigation@1"
         },
         {
@@ -86,12 +91,44 @@
         {
           "command": "gsdiagram.analyse",
           "when": "view == gsdiagram.architecture",
-          "group": "navigation@1"
+          "group": "navigation@0"
         },
         {
           "command": "gsdiagram.check",
           "when": "view == gsdiagram.architecture",
           "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "gsdiagram.archive",
+          "when": "view == gsdiagram.architecture && viewItem =~ /^architecture(-folder)?$/",
+          "group": "inline@1"
+        },
+        {
+          "command": "gsdiagram.unarchive",
+          "when": "view == gsdiagram.architecture && viewItem =~ /^architecture-archived/",
+          "group": "inline@1"
+        },
+        {
+          "command": "gsdiagram.removeArchitectureFolder",
+          "when": "view == gsdiagram.architecture && viewItem =~ /-folder$/",
+          "group": "inline@2"
+        },
+        {
+          "command": "gsdiagram.archive",
+          "when": "view == gsdiagram.architecture && viewItem =~ /^architecture(-folder)?$/",
+          "group": "1_architecture@1"
+        },
+        {
+          "command": "gsdiagram.unarchive",
+          "when": "view == gsdiagram.architecture && viewItem =~ /^architecture-archived/",
+          "group": "1_architecture@1"
+        },
+        {
+          "command": "gsdiagram.removeArchitectureFolder",
+          "when": "view == gsdiagram.architecture && viewItem =~ /-folder$/",
+          "group": "1_architecture@2"
         }
       ]
     },
@@ -144,6 +181,30 @@
         "command": "gsdiagram.openReadme",
         "title": "Open the README",
         "category": "GSDiagram"
+      },
+      {
+        "command": "gsdiagram.addArchitectureFolder",
+        "title": "Add architecture folder",
+        "category": "GSDiagram",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "gsdiagram.removeArchitectureFolder",
+        "title": "Remove architecture folder",
+        "category": "GSDiagram",
+        "icon": "$(close)"
+      },
+      {
+        "command": "gsdiagram.archive",
+        "title": "Mark architecture archived",
+        "category": "GSDiagram",
+        "icon": "$(archive)"
+      },
+      {
+        "command": "gsdiagram.unarchive",
+        "title": "Mark architecture current",
+        "category": "GSDiagram",
+        "icon": "$(history)"
       }
     ],
     "configuration": {

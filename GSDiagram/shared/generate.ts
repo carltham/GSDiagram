@@ -1,13 +1,13 @@
 // Draws the diagrams that the architecture files describe, and keeps them up to date with them.
 //   Generate: each diagram described there that has no file yet gets one.
 //   Update:   the same, and each generated diagram is drawn again from its source; dragged positions stay.
-// A diagram without a source, drawn by hand, is never changed.
+// A diagram without a source, drawn by hand, is never changed, nor is anything of an archived architecture.
 
 import path from 'node:path';
-import { Described, readArchitecture, slugOf } from './architecture';
+import { Described, slugOf } from './architecture';
+import { architecturesOf, describedIn } from './architectures';
 import { parseDiagram } from './diagram';
-import { analyseArchitecture, ArchModel, modelViews } from './model';
-import { DIAGRAM_SUFFIX, idPattern, Project } from './project';
+import { DIAGRAM_SUFFIX, Project } from './project';
 import { Diagram } from './types';
 
 export interface Change {
@@ -18,19 +18,9 @@ export interface Change {
 
 const write = (d: Diagram) => JSON.stringify(d, null, 2) + '\n';
 
-const relative = (project: Project, file: string) => path.relative(project.root, file).split(path.sep).join('/');
-
-// The architecture model of the project's architecture files.
-export function projectModel(project: Project): ArchModel {
-  return analyseArchitecture(project.architecture.map(({ file, text }) => ({ rel: relative(project, file), text })), path.basename(project.root));
-}
-
-// Every diagram the project's architecture files describe: those drawn in them, Mermaid blocks and marked sections,
-// and the views of the model. A diagram drawn in them wins over a view with the same source.
-export function describedDiagrams(project: Project, model = projectModel(project)): Described[] {
-  const drawn = project.architecture.flatMap(({ file, text }) => readArchitecture(relative(project, file), text, idPattern(project.config)));
-  const sources = new Set(drawn.map(d => d.source));
-  return [...drawn, ...modelViews(model, idPattern(project.config)).filter(v => !sources.has(v.source))];
+// Every diagram the project's architectures describe, archived ones too.
+export function describedDiagrams(project: Project): Described[] {
+  return architecturesOf(project).flatMap(a => describedIn(project, a));
 }
 
 // The diagram as its source describes it, with what the file keeps of its own: dragged positions, and what was accepted.
@@ -46,7 +36,8 @@ function redraw(old: Diagram, described: Described): Diagram {
   };
 }
 
-// What Generate (update: false) or Update (update: true) would write.
+// What Generate (update: false) or Update (update: true) would write, for every architecture that is not archived.
+// A new diagram goes into the architecture's subfolder of the data folder.
 export function planDiagrams(project: Project, { update }: { update: boolean }): Change[] {
   const bySource = new Map<string, { file: string; diagram: Diagram; text: string }>();
   for (const { file, text } of project.diagrams) {
@@ -55,30 +46,32 @@ export function planDiagrams(project: Project, { update }: { update: boolean }):
       if (diagram.source) bySource.set(diagram.source, { file, diagram, text });
     } catch { /* reported by the check */ }
   }
-  const taken = new Set(project.diagrams.map(d => path.basename(d.file, DIAGRAM_SUFFIX)));
   const changes: Change[] = [];
 
-  for (const described of describedDiagrams(project)) {
-    const there = bySource.get(described.source);
-    if (there) {
-      if (!update) continue;
-      const text = write(redraw(there.diagram, described));
-      if (text !== there.text) changes.push({ file: there.file, text, created: false });
-      continue;
+  for (const a of architecturesOf(project).filter(a => !a.archived)) {
+    const taken = new Set(project.diagrams.filter(d => path.dirname(d.file) === a.diagrams).map(d => path.basename(d.file, DIAGRAM_SUFFIX)));
+    for (const described of describedIn(project, a)) {
+      const there = bySource.get(described.source);
+      if (there) {
+        if (!update) continue;
+        const text = write(redraw(there.diagram, described));
+        if (text !== there.text) changes.push({ file: there.file, text, created: false });
+        continue;
+      }
+      // Named by the marker, or else by its heading; by its file and heading when that name is taken.
+      const fileName = slugOf(described.source.replace(/^.*\//, '').replace(/\.md(#.*)?$/i, ''));
+      let name = described.name ?? (slugOf(described.heading) || fileName);
+      if (taken.has(name) && !described.name) name = `${fileName}-${name}`;
+      let unique = name, i = 2;
+      while (taken.has(unique)) unique = `${name}-${i++}`;
+      taken.add(unique);
+      const d = described.diagram;
+      changes.push({
+        file: path.join(a.diagrams, unique + DIAGRAM_SUFFIX),
+        text: write({ title: d.title, ...(d.direction ? { direction: d.direction } : {}), source: described.source, nodes: d.nodes, edges: d.edges }),
+        created: true,
+      });
     }
-    // Named by the marker, or else by its heading; by its file and heading when that name is taken.
-    const fileName = slugOf(described.source.replace(/^.*\//, '').replace(/\.md(#.*)?$/i, ''));
-    let name = described.name ?? (slugOf(described.heading) || fileName);
-    if (taken.has(name) && !described.name) name = `${fileName}-${name}`;
-    let unique = name, i = 2;
-    while (taken.has(unique)) unique = `${name}-${i++}`;
-    taken.add(unique);
-    const d = described.diagram;
-    changes.push({
-      file: path.join(project.folder, unique + DIAGRAM_SUFFIX),
-      text: write({ title: d.title, ...(d.direction ? { direction: d.direction } : {}), source: described.source, nodes: d.nodes, edges: d.edges }),
-      created: true,
-    });
   }
   return changes;
 }

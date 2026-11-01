@@ -3,7 +3,8 @@
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { parseDiagram, usedProcesses } from './diagram';
-import { describedDiagrams, projectModel } from './generate';
+import { architecturesOf, isArchivedDiagram, modelOf } from './architectures';
+import { describedDiagrams } from './generate';
 import { readProcesses } from './processes';
 import { idPattern, Project } from './project';
 import { ArchModel } from './model';
@@ -40,10 +41,10 @@ export function checkProject(project: Project): Finding[] {
   const findings: Finding[] = [];
   const processes = project.processes ? readProcesses(project.processes.text, idPattern(project.config)) : undefined;
   const used = new Set<string>();
-  const model = projectModel(project);
-  const sources = new Set(describedDiagrams(project, model).map(d => d.source));
+  const sources = new Set(describedDiagrams(project).map(d => d.source));
 
-  for (const n of reviewModel(model))
+  // An archived architecture, and its diagrams, give no findings.
+  for (const n of architecturesOf(project).filter(a => !a.archived).flatMap(a => reviewModel(modelOf(project, a))))
     findings.push({ file: path.join(project.root, n.at.file), line: n.at.line, column: n.at.column, length: Math.max(n.at.length, 1),
       severity: n.severity, message: n.message, about: 'architecture' });
 
@@ -52,6 +53,7 @@ export function checkProject(project: Project): Finding[] {
       message: `The processes file ${project.config.processesFile} is missing, or outside the project.` });
 
   for (const { file, text } of project.diagrams) {
+    if (isArchivedDiagram(project, file, text)) continue;
     let d: Diagram;
     try {
       d = parseDiagram(text);

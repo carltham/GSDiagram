@@ -152,6 +152,7 @@ function project(architecture: Record<string, string>, diagrams: Record<string, 
     root: '/p', folder: '/p/.gsdiagram', config: {},
     diagrams: Object.entries(diagrams).map(([name, d]) =>
       ({ file: `/p/.gsdiagram/${name}.diagram.json`, text: typeof d === 'string' ? d : JSON.stringify(d, null, 2) + '\n' })),
+    architectureFolders: ['/p/dev/architecture'],
     architecture: Object.entries(architecture).map(([name, text]) => ({ file: `/p/dev/architecture/${name}`, text })),
   };
 }
@@ -164,7 +165,7 @@ const orders = `## Order life cycle
 
 test('Generate makes a diagram for each one described, named after its heading, with its source', () => {
   const changes = planDiagrams(project({ 'orders.md': orders }), { update: false });
-  assert.deepEqual(changes.map(c => [c.file, c.created]), [['/p/.gsdiagram/order-life-cycle.diagram.json', true]]);
+  assert.deepEqual(changes.map(c => [c.file, c.created]), [['/p/.gsdiagram/architecture/order-life-cycle.diagram.json', true]]);
   const d = JSON.parse(changes[0].text);
   assert.equal(d.source, 'dev/architecture/orders.md#order-life-cycle');
   assert.deepEqual(Object.keys(d), ['title', 'source', 'nodes', 'edges']);
@@ -173,8 +174,8 @@ test('Generate makes a diagram for each one described, named after its heading, 
 
 test('a name that is taken gets the file name in front, and then a number', () => {
   const twice = `## Flow\n<!-- diagram -->\n- A → B\n`;
-  const changes = planDiagrams(project({ 'a.md': twice, 'b.md': twice }, { flow: { title: 'Mine', nodes: [], edges: [] } }), { update: false });
-  assert.deepEqual(changes.map(c => c.file.replace('/p/.gsdiagram/', '')), ['a-flow.diagram.json', 'b-flow.diagram.json']);
+  const changes = planDiagrams(project({ 'a.md': twice, 'b.md': twice }, { 'architecture/flow': { title: 'Mine', nodes: [], edges: [] } }), { update: false });
+  assert.deepEqual(changes.map(c => c.file.replace('/p/.gsdiagram/', '')), ['architecture/a-flow.diagram.json', 'architecture/b-flow.diagram.json']);
 });
 
 test('Generate leaves diagrams that are there alone; Update draws them again from their source, keeping positions', () => {

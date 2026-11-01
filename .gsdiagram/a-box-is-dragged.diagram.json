@@ -1,0 +1,63 @@
+{
+  "title": "A box is dragged",
+  "direction": "DOWN",
+  "source": "dev/architecture/flows.md#a-box-is-dragged",
+  "nodes": [
+    {
+      "id": "start",
+      "label": "Start",
+      "kind": "start"
+    },
+    {
+      "id": "step1",
+      "label": "The user presses on a box and moves the pointer…"
+    },
+    {
+      "id": "step2",
+      "label": "On release, the page sends the new position, ro…"
+    },
+    {
+      "id": "step3",
+      "label": "The editor reads the document, sets the box's x…"
+    },
+    {
+      "id": "step4",
+      "label": "The document change makes the page draw again"
+    },
+    {
+      "id": "step5",
+      "label": "Undo and redo move it back and forth"
+    },
+    {
+      "id": "end",
+      "label": "End",
+      "kind": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "step1"
+    },
+    {
+      "from": "step1",
+      "to": "step2"
+    },
+    {
+      "from": "step2",
+      "to": "step3"
+    },
+    {
+      "from": "step3",
+      "to": "step4"
+    },
+    {
+      "from": "step4",
+      "to": "step5"
+    },
+    {
+      "from": "step5",
+      "to": "end"
+    }
+  ]
+}

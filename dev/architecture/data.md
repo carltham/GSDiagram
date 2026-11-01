@@ -8,7 +8,7 @@ Every file GSDiagram reads or writes. All of them are in the project.
 | `config.json` | Yes | By Set processes file |
 | `*.diagram.json` | Yes | By the editor, Accept, Generate, and Update |
 | `*.png` | No | By Render PNG |
-| `architecture.json` | No | By Analyse architecture |
+| `architecture.json`, one per architecture | No | By Analyse architecture |
 | The processes file | Yes | Never |
 | The architecture files | Yes | Never |
 | `.vscode/settings.json` | Yes, by the command line | By Choose data folder, through VS Code |
@@ -17,7 +17,7 @@ Every file GSDiagram reads or writes. All of them are in the project.
 
 - `.gsdiagram/` at the root of the project, unless the setting `gsdiagram.folder` names another, relative to the project.
 - A folder outside the project is refused. In VS Code the refusal is shown once per workspace folder, and that folder is left out of the check until the setting is put right. The command line stops with the refusal.
-- The diagrams are the `*.diagram.json` files directly in it, in the order of their names. Subfolders are not read.
+- The diagrams are the `*.diagram.json` files in it and in its subfolders, in the order of their paths. Each architecture's generated diagrams, and its `architecture.json`, are in a subfolder named after it: `.gsdiagram/architecture/`, `.gsdiagram/old/`.
 
 ## `config.json`
 
@@ -27,7 +27,9 @@ In the data folder. Every field may be left out.
 |---|---|---|
 | `processesFile` | The processes file, relative to the project | No processes file: the diagrams work, and nothing is checked against processes |
 | `idPattern` | The pattern of a process id, as a regular expression | `[A-Z]{4}\d+` |
-| `architectureFolder` | The folder of the architecture files, relative to the project | `dev/architecture` |
+| `architectureFolders` | The architecture folders, relative to the project. Each is an architecture, and so is each of its subfolders. | `architectureFolder`, or else `dev/architecture` |
+| `architectureFolder` | One architecture folder, as before there could be several | `dev/architecture` |
+| `archived` | Architectures marked archived, `true`, or current, `false`, by their folder relative to the project | A folder named `old`, `archive`, `redundant`, `obsolete`, `deprecated`, `legacy`, `retired`, or `former` is archived |
 
 ## `*.diagram.json`
 

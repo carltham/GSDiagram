@@ -1,0 +1,63 @@
+{
+  "title": "Set processes file",
+  "direction": "DOWN",
+  "source": "dev/architecture/flows.md#set-processes-file",
+  "nodes": [
+    {
+      "id": "start",
+      "label": "Start",
+      "kind": "start"
+    },
+    {
+      "id": "step1",
+      "label": "The user runs GSDiagram: Set processes file, an…"
+    },
+    {
+      "id": "step2",
+      "label": "A file picker for Markdown files opens at the p…"
+    },
+    {
+      "id": "step3",
+      "label": "A file outside the project is refused with a me…"
+    },
+    {
+      "id": "step4",
+      "label": "The file, relative to the project, is written a…"
+    },
+    {
+      "id": "step5",
+      "label": "The check runs against the new processes file"
+    },
+    {
+      "id": "end",
+      "label": "End",
+      "kind": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "step1"
+    },
+    {
+      "from": "step1",
+      "to": "step2"
+    },
+    {
+      "from": "step2",
+      "to": "step3"
+    },
+    {
+      "from": "step3",
+      "to": "step4"
+    },
+    {
+      "from": "step4",
+      "to": "step5"
+    },
+    {
+      "from": "step5",
+      "to": "end"
+    }
+  ]
+}

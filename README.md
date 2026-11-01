@@ -91,7 +91,7 @@ In the processes file, a line above each process says which diagrams use it, and
 
 ## The architecture
 
-GSDiagram reads a model of the project from the Markdown files in `dev/architecture`, in all its subfolders, and checks that they hold together. Another folder in the project can be set as `architectureFolder` in `config.json`. It reads what the files already have, by the headers of their tables and the headings of their lists:
+GSDiagram reads a model of the project from the Markdown files in `dev/architecture`, and checks that it holds together. It reads what the files already have, by the headers of their tables and the headings of their lists:
 
 | In the architecture files | In the model |
 |---|---|
@@ -114,7 +114,23 @@ A component is named by its path in the project, `` `shared/check` ``. In a Uses
 - Rule: shared/ must not use src/
 ```
 
-What does not hold together is in the Problems panel, at its place in the architecture file; see the check above. **GSDiagram: Analyse architecture** writes the model to `architecture.json` in the data folder, and says what it holds.
+What does not hold together is in the Problems panel, at its place in the architecture file; see the check above. **GSDiagram: Analyse architecture** writes each architecture's model to `architecture.json` in its folder of the data folder, and says what it holds.
+
+### Several architectures
+
+A project can have more than one architecture. Each architecture folder is one, of the files directly in it, and so is each of its subfolders: `dev/architecture`, `dev/architecture/billing`, `dev/architecture/old`. Each has its own model, its own findings, and its own diagrams, in a folder of the data folder named after it: `.gsdiagram/architecture`, `.gsdiagram/billing`. The side bar lists each as a group of its own.
+
+- **Archived:** an old or redundant architecture. It is listed, and its diagrams can be opened, but it gives no findings, its diagrams count for no process, and Generate and Update leave it alone. A folder named `old`, `archive`, `redundant`, `obsolete`, `deprecated`, or `legacy` is archived by itself; any architecture can be marked archived or current with the button on its row in the side bar, or with **GSDiagram: Mark architecture archived** and **Mark architecture current**. Moving an architecture's files into an `old` folder archives the diagrams drawn from them too.
+- **Elsewhere in the project:** **GSDiagram: Add architecture folder**, also in the Architecture list's title bar, adds another folder, such as `docs/design`; **Remove architecture folder** takes one off the list. `dev/architecture` is the only one until another is added.
+
+`config.json` keeps them:
+
+```json
+{
+  "architectureFolders": ["dev/architecture", "docs/design"],
+  "archived": { "dev/architecture/billing": true }
+}
+```
 
 ## Diagrams from the architecture files
 
@@ -147,11 +163,11 @@ What does not hold together is in the Problems panel, at its place in the archit
 
 A process id in parentheses, `(ORDE1)`, links a box or an arrow to that process, and the check checks it against the processes file. Outside a file about flows, a section without a marker is not drawn, even if it has arrows or steps. A diagram described in a section wins over a flow of the same section.
 
-The context is `context.diagram.json` and the components `components.diagram.json`. Every other diagram is named after its heading, `order-life-cycle.diagram.json`, unless the marker names it: `<!-- diagram: orders -->`. A marker before a Mermaid block names that block. The diagram records where it was described in `source`, such as `dev/architecture/orders.md#order-life-cycle`. Generate never changes a diagram that is there.
+Each architecture's diagrams go into its folder of the data folder, `.gsdiagram/architecture/`. The context is `context.diagram.json` and the components `components.diagram.json`. Every other diagram is named after its heading, `order-life-cycle.diagram.json`, unless the marker names it: `<!-- diagram: orders -->`. A marker before a Mermaid block names that block. The diagram records where it was described in `source`, such as `dev/architecture/orders.md#order-life-cycle`. Generate never changes a diagram that is there.
 
 **GSDiagram: Update diagrams** does the same, and draws each generated diagram again from its source: change the architecture file, not the diagram. Dragged positions and accepted process changes are kept. A diagram without `source`, drawn by hand, is never changed. When the section of a diagram's source is gone, the check says so.
 
-The changes are saved, and can be undone like an edit.
+A progress bar shows each file as it is saved. A diagram open in an editor changes like an edit, so Undo works on it; the others are written without being opened.
 
 ## Command line
 

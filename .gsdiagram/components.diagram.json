@@ -1,0 +1,367 @@
+{
+  "title": "Components",
+  "direction": "DOWN",
+  "source": "dev/architecture/components.md#components",
+  "nodes": [
+    {
+      "id": "gsdiagram-shared-types",
+      "label": "GSDiagram/shared/types"
+    },
+    {
+      "id": "gsdiagram-shared-diagram",
+      "label": "GSDiagram/shared/diagram"
+    },
+    {
+      "id": "gsdiagram-shared-processes",
+      "label": "GSDiagram/shared/processes"
+    },
+    {
+      "id": "gsdiagram-shared-folder",
+      "label": "GSDiagram/shared/folder"
+    },
+    {
+      "id": "gsdiagram-shared-project",
+      "label": "GSDiagram/shared/project"
+    },
+    {
+      "id": "gsdiagram-shared-check",
+      "label": "GSDiagram/shared/check"
+    },
+    {
+      "id": "gsdiagram-shared-architecture",
+      "label": "GSDiagram/shared/architecture"
+    },
+    {
+      "id": "gsdiagram-shared-model",
+      "label": "GSDiagram/shared/model"
+    },
+    {
+      "id": "gsdiagram-shared-review",
+      "label": "GSDiagram/shared/review"
+    },
+    {
+      "id": "gsdiagram-shared-generate",
+      "label": "GSDiagram/shared/generate"
+    },
+    {
+      "id": "gsdiagram-shared-layout",
+      "label": "GSDiagram/shared/layout"
+    },
+    {
+      "id": "gsdiagram-shared-draw",
+      "label": "GSDiagram/shared/draw"
+    },
+    {
+      "id": "gsdiagram-extension-extension",
+      "label": "GSDiagram/extension/extension"
+    },
+    {
+      "id": "gsdiagram-extension-check",
+      "label": "GSDiagram/extension/check"
+    },
+    {
+      "id": "gsdiagram-extension-editor",
+      "label": "GSDiagram/extension/editor"
+    },
+    {
+      "id": "gsdiagram-extension-sidebar",
+      "label": "GSDiagram/extension/sidebar"
+    },
+    {
+      "id": "gsdiagram-extension-links",
+      "label": "GSDiagram/extension/links"
+    },
+    {
+      "id": "gsdiagram-extension-folder",
+      "label": "GSDiagram/extension/folder"
+    },
+    {
+      "id": "gsdiagram-webview-main",
+      "label": "GSDiagram/webview/main"
+    },
+    {
+      "id": "gsdiagram-webview-render",
+      "label": "GSDiagram/webview/render"
+    },
+    {
+      "id": "gsdiagram-webview-style-css",
+      "label": "GSDiagram/webview/style.css"
+    },
+    {
+      "id": "gsdiagram-cli-cli",
+      "label": "GSDiagram/cli/cli"
+    }
+  ],
+  "edges": [
+    {
+      "from": "gsdiagram-shared-diagram",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-shared-processes",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-shared-project",
+      "to": "gsdiagram-shared-folder"
+    },
+    {
+      "from": "gsdiagram-shared-project",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-shared-check",
+      "to": "gsdiagram-shared-diagram"
+    },
+    {
+      "from": "gsdiagram-shared-check",
+      "to": "gsdiagram-shared-processes"
+    },
+    {
+      "from": "gsdiagram-shared-check",
+      "to": "gsdiagram-shared-project"
+    },
+    {
+      "from": "gsdiagram-shared-check",
+      "to": "gsdiagram-shared-generate"
+    },
+    {
+      "from": "gsdiagram-shared-check",
+      "to": "gsdiagram-shared-model"
+    },
+    {
+      "from": "gsdiagram-shared-check",
+      "to": "gsdiagram-shared-review"
+    },
+    {
+      "from": "gsdiagram-shared-check",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-shared-architecture",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-shared-model",
+      "to": "gsdiagram-shared-architecture"
+    },
+    {
+      "from": "gsdiagram-shared-model",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-shared-review",
+      "to": "gsdiagram-shared-model"
+    },
+    {
+      "from": "gsdiagram-shared-generate",
+      "to": "gsdiagram-shared-architecture"
+    },
+    {
+      "from": "gsdiagram-shared-generate",
+      "to": "gsdiagram-shared-diagram"
+    },
+    {
+      "from": "gsdiagram-shared-generate",
+      "to": "gsdiagram-shared-model"
+    },
+    {
+      "from": "gsdiagram-shared-generate",
+      "to": "gsdiagram-shared-project"
+    },
+    {
+      "from": "gsdiagram-shared-generate",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-shared-layout",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-shared-draw",
+      "to": "gsdiagram-shared-layout"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-extension-check"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-extension-editor"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-extension-links"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-extension-sidebar"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-extension-folder"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-shared-check"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-shared-folder"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-shared-generate"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-shared-model"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-shared-project"
+    },
+    {
+      "from": "gsdiagram-extension-extension",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-extension-check",
+      "to": "gsdiagram-extension-folder"
+    },
+    {
+      "from": "gsdiagram-extension-check",
+      "to": "gsdiagram-shared-check"
+    },
+    {
+      "from": "gsdiagram-extension-check",
+      "to": "gsdiagram-shared-diagram"
+    },
+    {
+      "from": "gsdiagram-extension-check",
+      "to": "gsdiagram-shared-processes"
+    },
+    {
+      "from": "gsdiagram-extension-check",
+      "to": "gsdiagram-shared-project"
+    },
+    {
+      "from": "gsdiagram-extension-check",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-extension-editor",
+      "to": "gsdiagram-extension-check"
+    },
+    {
+      "from": "gsdiagram-extension-editor",
+      "to": "gsdiagram-shared-diagram"
+    },
+    {
+      "from": "gsdiagram-extension-editor",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-extension-editor",
+      "to": "gsdiagram-webview-main",
+      "label": "talks to"
+    },
+    {
+      "from": "gsdiagram-extension-sidebar",
+      "to": "gsdiagram-extension-check"
+    },
+    {
+      "from": "gsdiagram-extension-sidebar",
+      "to": "gsdiagram-shared-check"
+    },
+    {
+      "from": "gsdiagram-extension-sidebar",
+      "to": "gsdiagram-shared-diagram"
+    },
+    {
+      "from": "gsdiagram-extension-sidebar",
+      "to": "gsdiagram-shared-generate"
+    },
+    {
+      "from": "gsdiagram-extension-sidebar",
+      "to": "gsdiagram-shared-model"
+    },
+    {
+      "from": "gsdiagram-extension-sidebar",
+      "to": "gsdiagram-shared-project"
+    },
+    {
+      "from": "gsdiagram-extension-sidebar",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-extension-links",
+      "to": "gsdiagram-extension-check"
+    },
+    {
+      "from": "gsdiagram-extension-links",
+      "to": "gsdiagram-shared-project"
+    },
+    {
+      "from": "gsdiagram-extension-folder",
+      "to": "gsdiagram-shared-project"
+    },
+    {
+      "from": "gsdiagram-webview-main",
+      "to": "gsdiagram-shared-diagram"
+    },
+    {
+      "from": "gsdiagram-webview-main",
+      "to": "gsdiagram-shared-layout"
+    },
+    {
+      "from": "gsdiagram-webview-main",
+      "to": "gsdiagram-shared-draw"
+    },
+    {
+      "from": "gsdiagram-webview-main",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-webview-render",
+      "to": "gsdiagram-shared-diagram"
+    },
+    {
+      "from": "gsdiagram-webview-render",
+      "to": "gsdiagram-shared-layout"
+    },
+    {
+      "from": "gsdiagram-webview-render",
+      "to": "gsdiagram-shared-draw"
+    },
+    {
+      "from": "gsdiagram-cli-cli",
+      "to": "gsdiagram-shared-check"
+    },
+    {
+      "from": "gsdiagram-cli-cli",
+      "to": "gsdiagram-shared-generate"
+    },
+    {
+      "from": "gsdiagram-cli-cli",
+      "to": "gsdiagram-shared-model"
+    },
+    {
+      "from": "gsdiagram-cli-cli",
+      "to": "gsdiagram-shared-processes"
+    },
+    {
+      "from": "gsdiagram-cli-cli",
+      "to": "gsdiagram-shared-project"
+    },
+    {
+      "from": "gsdiagram-cli-cli",
+      "to": "gsdiagram-shared-types"
+    },
+    {
+      "from": "gsdiagram-cli-cli",
+      "to": "gsdiagram-webview-render",
+      "label": "opens"
+    }
+  ]
+}

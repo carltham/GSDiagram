@@ -5,13 +5,15 @@ import path from 'node:path';
 import * as vscode from 'vscode';
 import { acceptChanges, modelSummary, plural, summary } from '../shared/check';
 import { isInside, resolveDataFolder } from '../shared/folder';
-import { Change, describedDiagrams, planDiagrams, projectModel } from '../shared/generate';
+import { architecturesOf, drawnArchitectures, foldersOf, modelOf } from '../shared/architectures';
+import { Change, planDiagrams } from '../shared/generate';
 import { MODEL_FILE, writeModel } from '../shared/model';
 import { readConfig, writeConfig } from '../shared/project';
 import { DEFAULT_ARCHITECTURE_FOLDER } from '../shared/types';
 import { Checker } from './check';
 import { DiagramEditor, replaceText, VIEW_TYPE } from './editor';
 import { folderSettingOf, pickWorkspaceFolder } from './folder';
+import { registerArchitectureCommands } from './architectures';
 import { ProcessLinks } from './links';
 import { ArchitectureTree, DiagramTree } from './sidebar';
 
@@ -55,6 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
     }),
 
     vscode.commands.registerCommand('gsdiagram.analyse', () => analyse(checker)),
+    ...registerArchitectureCommands(checker),
     vscode.commands.registerCommand('gsdiagram.generate', () => drawFromArchitecture(checker, false)),
     vscode.commands.registerCommand('gsdiagram.update', () => drawFromArchitecture(checker, true)),
 
@@ -108,61 +111,84 @@ export function activate(context: vscode.ExtensionContext) {
   return { checker };
 }
 
-// Analyse architecture: writes the model of every workspace folder's architecture files into its data folder, and
-// says what it holds and what the check found in it.
+// Analyse architecture: writes the model of each architecture into its subfolder of the data folder, and says what it
+// holds and what the check found in it.
 async function analyse(checker: Checker) {
   await checker.run();
-  const analysed = checker.all().map(c => ({ c, model: projectModel(c.project) })).filter(({ model }) => model.elements.length > 0);
+  const analysed = checker.all().flatMap(c => architecturesOf(c.project).map(a => ({ c, a, model: modelOf(c.project, a) })))
+    .filter(({ model }) => model.elements.length > 0);
   if (analysed.length === 0) {
-    const folder = checker.all()[0]?.project.config.architectureFolder || DEFAULT_ARCHITECTURE_FOLDER;
-    return vscode.window.showErrorMessage(`GSDiagram: nothing to analyse in ${folder}.`);
+    const project = checker.all()[0]?.project;
+    return vscode.window.showErrorMessage(`GSDiagram: nothing to analyse in ${project ? foldersOf(project) : DEFAULT_ARCHITECTURE_FOLDER}.`);
   }
-  for (const { c, model } of analysed) {
+  for (const { c, a, model } of analysed) {
     try {
-      await mkdir(c.project.folder, { recursive: true });
-      await writeFile(path.join(c.project.folder, MODEL_FILE), writeModel(model));
+      await mkdir(a.diagrams, { recursive: true });
+      await writeFile(path.join(a.diagrams, MODEL_FILE), writeModel(model));
     } catch (e) {
       return vscode.window.showErrorMessage(`GSDiagram: ${(e as Error).message}`);
     }
-    const found = c.findings.filter(f => f.about === 'architecture');
+    const files = new Set(a.files.map(f => f.file));
+    const found = c.findings.filter(f => f.about === 'architecture' && files.has(f.file));
     const warnings = found.filter(f => f.severity === 'warning').length;
-    vscode.window.showInformationMessage(`GSDiagram: ${modelSummary(model)}; ${plural(warnings, 'warning')} and ${plural(found.length - warnings, 'note')} `
-      + `in the Problems panel. Written to ${relative(c.project.root, path.join(c.project.folder, MODEL_FILE))}.`);
+    const named = analysed.length > 1 ? `${a.name}${a.archived ? ', archived' : ''}: ` : '';
+    vscode.window.showInformationMessage(`GSDiagram: ${named}${modelSummary(model)}; `
+      + (a.archived ? 'archived, so not checked' : `${plural(warnings, 'warning')} and ${plural(found.length - warnings, 'note')} in the Problems panel`)
+      + `. Written to ${relative(c.project.root, path.join(a.diagrams, MODEL_FILE))}.`);
   }
 }
 
-// Generate, or Update, in every workspace folder whose architecture files describe diagrams. The files change like an
-// edit would, so Undo works, and are saved.
+// Generate, or Update, in every architecture that is not archived and describes diagrams. A progress bar, in a
+// notification and on top of the Diagrams list, shows each step and each file saved.
 async function drawFromArchitecture(checker: Checker, update: boolean) {
+  const title = update ? 'GSDiagram: updating diagrams' : 'GSDiagram: generating diagrams';
+  const done = await vscode.window.withProgress({ location: { viewId: 'gsdiagram.diagrams' } }, () =>
+    vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title }, progress => draw(checker, update, progress)));
+  if (done.error) vscode.window.showErrorMessage(`GSDiagram: ${done.error}`);
+  else vscode.window.showInformationMessage(`GSDiagram: ${done.message}`);
+  if (done.changed) checker.soon();
+}
+
+type Progress = vscode.Progress<{ message?: string; increment?: number }>;
+
+// The work of Generate or Update, step by step, with the progress of each: checking 10, planning 10, the edit 10,
+// and saving the files 70, shared among them.
+async function draw(checker: Checker, update: boolean, progress: Progress): Promise<{ message?: string; error?: string; changed?: boolean }> {
+  progress.report({ message: 'checking the project' });
   await checker.run();
-  const results = checker.all().filter(c => describedDiagrams(c.project).length > 0);
+  progress.report({ increment: 10, message: 'reading the architecture' });
+  const results = checker.all().filter(c => drawnArchitectures(c.project).length > 0);
   if (results.length === 0) {
-    const folder = checker.all()[0]?.project.config.architectureFolder || DEFAULT_ARCHITECTURE_FOLDER;
-    return vscode.window.showErrorMessage(`GSDiagram: no diagrams are described in ${folder}.`);
+    const project = checker.all()[0]?.project;
+    return { error: `no diagrams are described in ${project ? foldersOf(project) : DEFAULT_ARCHITECTURE_FOLDER}.` };
   }
   const changes: Change[] = results.flatMap(c => planDiagrams(c.project, { update }));
-  if (changes.length === 0) return vscode.window.showInformationMessage('GSDiagram: the diagrams are up to date.');
+  if (changes.length === 0) return { message: 'the diagrams are up to date.' };
 
-  const edit = new vscode.WorkspaceEdit();
-  for (const c of changes) {
-    const uri = vscode.Uri.file(c.file);
-    if (c.created) {
-      edit.createFile(uri, { ignoreIfExists: false });
-      edit.insert(uri, new vscode.Position(0, 0), c.text);
-    } else {
-      const document = await vscode.workspace.openTextDocument(uri);
-      edit.replace(uri, new vscode.Range(0, 0, document.lineCount, 0), c.text);
-    }
+  // A diagram open in an editor changes like an edit, so its editor follows and Undo works, and is saved; every other
+  // file is written as it is, without opening it.
+  progress.report({ increment: 10, message: `writing ${plural(changes.length, 'diagram')}` });
+  const open = (c: Change) => vscode.workspace.textDocuments.find(d => d.uri.fsPath === c.file);
+  const edited = changes.filter(c => !c.created && open(c));
+  if (edited.length) {
+    const edit = new vscode.WorkspaceEdit();
+    for (const c of edited) edit.replace(vscode.Uri.file(c.file), new vscode.Range(0, 0, open(c)!.lineCount, 0), c.text);
+    if (!await vscode.workspace.applyEdit(edit)) return { error: 'the diagrams could not be changed.' };
   }
-  if (!await vscode.workspace.applyEdit(edit)) return vscode.window.showErrorMessage('GSDiagram: the diagrams could not be changed.');
-  for (const c of changes) await (await vscode.workspace.openTextDocument(vscode.Uri.file(c.file))).save();
+  progress.report({ increment: 10 });
+  for (const [i, c] of changes.entries()) {
+    progress.report({ message: `saving ${path.basename(c.file)}, ${i + 1} of ${changes.length}` });
+    if (edited.includes(c)) await open(c)!.save();
+    else await vscode.workspace.fs.writeFile(vscode.Uri.file(c.file), Buffer.from(c.text));
+    progress.report({ increment: 70 / changes.length });
+  }
 
-  const created = changes.filter(c => c.created).map(c => path.basename(c.file));
-  const updated = changes.filter(c => !c.created).map(c => path.basename(c.file));
-  vscode.window.showInformationMessage(['GSDiagram:',
-    created.length ? `created ${created.join(', ')}` : '',
-    updated.length ? `${created.length ? 'and ' : ''}updated ${updated.join(', ')}` : ''].filter(Boolean).join(' ') + '.');
-  checker.soon();
+  // Named in the data folder: architecture/components.diagram.json.
+  const named = (c: Change) => relative(results.find(r => isInside(r.project.folder, c.file))?.project.folder ?? path.dirname(c.file), c.file);
+  const created = changes.filter(c => c.created).map(named);
+  const updated = changes.filter(c => !c.created).map(named);
+  return { changed: true, message: [created.length ? `created ${created.join(', ')}` : '',
+    updated.length ? `${created.length ? 'and ' : ''}updated ${updated.join(', ')}` : ''].filter(Boolean).join(' ') + '.' };
 }
 
 export function deactivate() {}

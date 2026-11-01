@@ -38,7 +38,7 @@ test('without diagrams, the side bar says how to get started, and Generate fills
   await vscode.openSideBar();
   await expect(vscode.welcome('Diagrams')).toContainText('No diagrams in this project yet.');
   await vscode.welcome('Diagrams').getByRole('button', { name: 'Generate diagrams' }).click();
-  await expect(vscode.notification('GSDiagram: created components.diagram.json, reset-layout.diagram.json.')).toBeVisible();
+  await expect(vscode.notification('GSDiagram: created architecture/components.diagram.json, architecture/reset-layout.diagram.json.')).toBeVisible();
   await expect(vscode.viewRow('Diagrams', 'components')).toContainText('generated');
   await expect(vscode.viewRow('Diagrams', 'reset-layout')).toBeVisible();
 });

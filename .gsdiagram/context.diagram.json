@@ -1,0 +1,79 @@
+{
+  "title": "GSDiagram and what it works with",
+  "direction": "RIGHT",
+  "source": "dev/architecture/context.md#who-uses-it",
+  "nodes": [
+    {
+      "id": "system",
+      "label": "GSDiagram"
+    },
+    {
+      "id": "someone-writing-a-project-s-architecture",
+      "label": "Someone writing a project's architecture"
+    },
+    {
+      "id": "a-developer-or-an-agent",
+      "label": "A developer or an agent"
+    },
+    {
+      "id": "vs-code",
+      "label": "VS Code"
+    },
+    {
+      "id": "the-project-s-folder",
+      "label": "The project's folder"
+    },
+    {
+      "id": "the-processes-file",
+      "label": "The processes file"
+    },
+    {
+      "id": "the-architecture-files",
+      "label": "The architecture files"
+    },
+    {
+      "id": "vscode-settings-json",
+      "label": ".vscode/settings.json"
+    },
+    {
+      "id": "chrome-or-chromium",
+      "label": "Chrome or Chromium"
+    }
+  ],
+  "edges": [
+    {
+      "from": "someone-writing-a-project-s-architecture",
+      "to": "system",
+      "label": "uses"
+    },
+    {
+      "from": "a-developer-or-an-agent",
+      "to": "system",
+      "label": "uses"
+    },
+    {
+      "from": "system",
+      "to": "vs-code"
+    },
+    {
+      "from": "system",
+      "to": "the-project-s-folder"
+    },
+    {
+      "from": "system",
+      "to": "the-processes-file"
+    },
+    {
+      "from": "system",
+      "to": "the-architecture-files"
+    },
+    {
+      "from": "system",
+      "to": "vscode-settings-json"
+    },
+    {
+      "from": "system",
+      "to": "chrome-or-chromium"
+    }
+  ]
+}

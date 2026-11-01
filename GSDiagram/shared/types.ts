@@ -36,8 +36,14 @@ export interface Config {
   processesFile?: string;
   // The pattern of a process id, as a regular expression.
   idPattern?: string;
-  // The folder of the architecture files that describe the diagrams, relative to the project. dev/architecture unless set.
+  // The folders of the architecture files, relative to the project. Each is an architecture, and so is each of its
+  // subfolders. dev/architecture unless set.
+  architectureFolders?: string[];
+  // One folder, as before there could be several; read when architectureFolders is not set.
   architectureFolder?: string;
+  // Architectures marked archived, true, or current, false, by their folder relative to the project. Unless marked, a
+  // folder named old, archive, redundant, obsolete, deprecated, or legacy is archived.
+  archived?: Record<string, boolean>;
 }
 
 export const DEFAULT_ARCHITECTURE_FOLDER = 'dev/architecture';

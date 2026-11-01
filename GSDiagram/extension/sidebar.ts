@@ -8,10 +8,11 @@ import path from 'node:path';
 import * as vscode from 'vscode';
 import { Finding, plural } from '../shared/check';
 import { parseDiagram } from '../shared/diagram';
-import { projectModel } from '../shared/generate';
+import { Architecture, architecturesOf, isArchivedDiagram, modelOf } from '../shared/architectures';
 import { ArchElement, ArchModel, Place } from '../shared/model';
 import { DIAGRAM_SUFFIX } from '../shared/project';
 import { Diagram } from '../shared/types';
+import { ArchitectureRef } from './architectures';
 import { Checked, Checker } from './check';
 
 export interface Item extends vscode.TreeItem { children?: Item[] }
@@ -66,34 +67,70 @@ abstract class Tree implements vscode.TreeDataProvider<Item> {
 
 export class DiagramTree extends Tree {
   protected build(checked: Checked): Item[] {
-    return checked.project.diagrams.map(({ file, text }) => {
+    const { project } = checked;
+    const rows = project.diagrams.map(({ file, text }) => {
       let d: Diagram | undefined;
       try { d = parseDiagram(text); } catch { /* shown as not a diagram */ }
+      const archived = isArchivedDiagram(project, file, text);
       const found = checked.findings.filter(f => f.file === file);
       const severity = worst(found);
-      return item(path.basename(file, DIAGRAM_SUFFIX), {
-        id: `diagram:${file}`,
-        description: [d ? (d.source ? 'generated' : '') : 'not a diagram', counted(found)].filter(Boolean).join(' · '),
-        tooltip: [d ? d.title : 'Not a diagram', d?.source ? `Generated from ${d.source}` : '', ...found.map(f => f.message)].filter(Boolean).join('\n'),
-        iconPath: severity ? ICON[severity] : new vscode.ThemeIcon('type-hierarchy'),
-        resourceUri: vscode.Uri.file(file),
-        command: { command: 'gsdiagram.openDiagram', title: 'Open', arguments: [vscode.Uri.file(file)] },
-        contextValue: 'diagram',
-      });
+      return {
+        folder: path.dirname(file), archived,
+        item: item(path.basename(file, DIAGRAM_SUFFIX), {
+          id: `diagram:${file}`,
+          description: [d ? (d.source ? 'generated' : '') : 'not a diagram', archived ? 'archived' : '', counted(found)].filter(Boolean).join(' · '),
+          tooltip: [d ? d.title : 'Not a diagram', d?.source ? `Generated from ${d.source}` : '', ...found.map(f => f.message)].filter(Boolean).join('\n'),
+          iconPath: severity ? ICON[severity] : new vscode.ThemeIcon(archived ? 'archive' : 'type-hierarchy'),
+          resourceUri: vscode.Uri.file(file),
+          command: { command: 'gsdiagram.openDiagram', title: 'Open', arguments: [vscode.Uri.file(file)] },
+          contextValue: 'diagram',
+        }),
+      };
     });
+    // In one folder, a plain list; in several, the data folder's own diagrams, then a group per subfolder, an
+    // architecture's: open for a current one, closed for an archived one.
+    const folders = [...new Set(rows.map(r => r.folder))];
+    if (folders.length < 2) return rows.map(r => r.item);
+    const own = rows.filter(r => r.folder === project.folder).map(r => r.item);
+    return [...own, ...folders.filter(f => f !== project.folder).sort().map(f => {
+      const inside = rows.filter(r => r.folder === f);
+      const archived = inside.every(r => r.archived);
+      return item(path.relative(project.folder, f).split(path.sep).join('/'), {
+        id: `diagrams:${f}`, description: [String(inside.length), archived ? 'archived' : ''].filter(Boolean).join(' · '),
+        children: inside.map(r => r.item), iconPath: new vscode.ThemeIcon(archived ? 'archive' : 'folder'),
+        collapsibleState: archived ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.Expanded,
+      });
+    })];
   }
 }
 
-// The model of each project, read once per check.
-const models = new WeakMap<Checked, ArchModel>();
-const modelOf = (c: Checked) => { if (!models.has(c)) models.set(c, projectModel(c.project)); return models.get(c)!; };
-
 export class ArchitectureTree extends Tree {
   protected build(checked: Checked): Item[] {
-    const model = modelOf(checked);
-    if (model.elements.length === 0 && model.rules.length === 0) return [];
+    const { project } = checked;
+    const shown = architecturesOf(project).map(a => ({ a, model: modelOf(project, a) }))
+      .filter(({ a, model }) => model.elements.length > 0 || model.rules.length > 0 || project.architectureFolders.includes(a.folder) && a.files.length > 0);
+    // One current architecture is shown as it is; several, each as a group of its own.
+    if (shown.length === 1 && !shown[0].a.archived) return this.groups(checked, shown[0].a, shown[0].model);
+    return shown.map(({ a, model }) => {
+      const ref: ArchitectureRef = { root: project.root, rel: a.rel };
+      return Object.assign(item(a.name, {
+        id: `architecture:${a.folder}`,
+        description: [a.rel, a.archived ? 'archived' : ''].filter(Boolean).join(' · '),
+        tooltip: `${a.rel}${a.archived ? '\nArchived: listed, but not checked, and Generate and Update leave it alone.' : ''}`,
+        iconPath: new vscode.ThemeIcon(a.archived ? 'archive' : 'folder-library'),
+        children: this.groups(checked, a, model),
+        collapsibleState: a.archived ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.Expanded,
+        contextValue: `architecture${a.archived ? '-archived' : ''}${project.architectureFolders.includes(a.folder) ? '-folder' : ''}`,
+      }), ref);
+    });
+  }
+
+  // The model of one architecture: Context, Components by layer, Data, Flows, Rules, and its findings.
+  private groups(checked: Checked, a: Architecture, model: ArchModel): Item[] {
     const root = checked.project.root;
-    const findings = checked.findings.filter(f => f.about === 'architecture');
+    const files = new Set(a.files.map(f => f.file));
+    const findings = checked.findings.filter(f => f.about === 'architecture' && files.has(f.file));
+    const key = `architecture:${a.folder}`;
     const at = (p: Place) => findings.filter(f => f.file === path.join(root, p.file) && f.line === p.line);
     const open = (p: Place): vscode.Command => ({
       command: 'vscode.open', title: 'Open',
@@ -110,7 +147,7 @@ export class ArchitectureTree extends Tree {
     };
     const once = (kind: string) => model.elements.filter((e, i, all) => e.kind === kind && all.findIndex(x => x.id === e.id) === i);
     const group = (id: string, label: string, children: Item[], icon: string) =>
-      item(label, { id: `architecture:${root}:${id}`, description: String(children.length), children, iconPath: new vscode.ThemeIcon(icon) });
+      item(label, { id: `${key}:${id}`, description: String(children.length), children, iconPath: new vscode.ThemeIcon(icon) });
     const element = (e: ArchElement, icon: string, description?: string) => leaf(e.name, e.at, icon, description);
     // A component by its last name, its folder beside it: editor, GSDiagram/extension.
     const component = (c: ArchElement) => {
@@ -128,9 +165,9 @@ export class ArchitectureTree extends Tree {
       const children = layers.length < 2 ? components.map(component)
         : layers.map(l => {
           const inLayer = components.filter(c => (c.layer ?? '') === l).map(component);
-          return item(l || 'Other', { id: `architecture:${root}:layer:${l}`, description: String(inLayer.length), children: inLayer, iconPath: new vscode.ThemeIcon('layers') });
+          return item(l || 'Other', { id: `${key}:layer:${l}`, description: String(inLayer.length), children: inLayer, iconPath: new vscode.ThemeIcon('layers') });
         });
-      groups.push(item('Components', { id: `architecture:${root}:components`, description: String(components.length), children, iconPath: new vscode.ThemeIcon('symbol-module') }));
+      groups.push(item('Components', { id: `${key}:components`, description: String(components.length), children, iconPath: new vscode.ThemeIcon('symbol-module') }));
     }
 
     const data = once('data').map(e => element(e, 'file', [e.read ? 'read' : '', e.written ? 'written' : ''].filter(Boolean).join(', ')));
@@ -143,10 +180,10 @@ export class ArchitectureTree extends Tree {
     if (rules.length) groups.push(group('rules', 'Rules', rules, 'law'));
 
     const severity = worst(findings);
-    groups.push(item(findings.length ? counted(findings) : 'No findings', {
-      id: `architecture:${root}:findings`,
-      tooltip: findings.length ? 'Show them in the Problems panel' : 'The architecture holds together.',
-      iconPath: severity ? ICON[severity] : new vscode.ThemeIcon('pass'),
+    groups.push(item(a.archived ? 'Archived: not checked' : findings.length ? counted(findings) : 'No findings', {
+      id: `${key}:findings`,
+      tooltip: a.archived ? 'An archived architecture gives no findings.' : findings.length ? 'Show them in the Problems panel' : 'The architecture holds together.',
+      iconPath: a.archived ? new vscode.ThemeIcon('archive') : severity ? ICON[severity] : new vscode.ThemeIcon('pass'),
       ...(findings.length ? { command: { command: 'workbench.actions.view.problems', title: 'Show problems' } } : {}),
     }));
     return groups;
