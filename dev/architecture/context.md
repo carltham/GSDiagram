@@ -20,7 +20,7 @@ The same code also runs as a command line, outside VS Code.
 | **VS Code** 1.90 or later | Hosts the extension: the diagram editor, the Problems panel, the lenses and hover in Markdown, the commands, the settings, the pickers, and the messages. |
 | **The project's folder** | Holds everything GSDiagram reads and writes. Each workspace folder is a project of its own. |
 | **The processes file** | A Markdown file of the project that lists the processes. Read only. |
-| **The architecture files** | The Markdown files under the project's architecture folder, `dev/architecture` unless configured. Read only; diagrams described in them can be generated. |
+| **The architecture files** | The Markdown files under the project's architecture folder, `dev/architecture` unless configured. Read only; read as a model of the project, checked, and drawn as diagrams. |
 | **The project's `.vscode/settings.json`** | Holds the setting `gsdiagram.folder`, when the data folder is not the default. |
 | **Chrome or Chromium** | Used only by the command line's `render`, to draw diagrams as PNG without a window. |
 
@@ -29,7 +29,7 @@ The same code also runs as a command line, outside VS Code.
 | In | Out |
 |---|---|
 | The processes file | Findings in the Problems panel, or printed by the command line |
-| The architecture files | Generated `*.diagram.json` files |
+| The architecture files | Generated `*.diagram.json` files; findings about the architecture; `architecture.json` |
 | `*.diagram.json`, typed or dragged | The drawing in the editor; the changed file |
 | `config.json` and the setting | Where everything is found |
 | | `*.png` pictures of the diagrams |

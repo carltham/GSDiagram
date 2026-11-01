@@ -10,7 +10,7 @@ async function main() {
   await runTests({
     extensionDevelopmentPath: root,
     extensionTestsPath: path.join(__dirname, 'suite.js'),
-    launchArgs: [path.join(root, 'test/fixture'), '--disable-extensions', '--disable-workspace-trust'],
+    launchArgs: [path.join(root, 'dev/testing/fixture'), '--disable-extensions', '--disable-workspace-trust'],
   });
 }
 

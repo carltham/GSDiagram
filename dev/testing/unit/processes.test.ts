@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readProcesses } from '../shared/processes';
+import { readProcesses } from '../../../GSDiagram/shared/processes';
 
 const md = `# User processes
 

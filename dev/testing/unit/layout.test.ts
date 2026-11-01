@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { layout } from '../shared/layout';
-import { Diagram } from '../shared/types';
+import { layout } from '../../../GSDiagram/shared/layout';
+import { Diagram } from '../../../GSDiagram/shared/types';
 
 const measure = (t: string) => t.length * 7;
 

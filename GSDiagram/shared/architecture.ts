@@ -23,7 +23,7 @@ export const slugOf = (s: string) =>
   s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 // Markdown kept as plain text: links, emphasis, and code marks are dropped.
-function plain(s: string): string {
+export function plain(s: string): string {
   return s.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[*_`]+/g, '').replace(/\s+/g, ' ').trim();
 }
 
@@ -100,9 +100,11 @@ function fromArrows(items: string[], b: Builder): void {
 function fromSteps(steps: string[], b: Builder): void {
   let last = b.node('start', undefined, 'start');
   steps.forEach((step, i) => {
-    const t = plain(step);
-    const { process } = b.linked(t);
-    let label = b.linked(t.split(/:\s|\.\s|;\s|\.$/)[0]).label;
+    const { process } = b.linked(plain(step));
+    // Cut where the first sentence or clause ends, but not inside **bold**, `code`, or a link.
+    const masked = step.replace(/\*\*.+?\*\*|`[^`]+`|\[[^\]]*\]\([^)]*\)/g, m => 'x'.repeat(m.length));
+    const cut = masked.search(/:\s|\.\s|;\s|\.$/);
+    let label = b.linked(plain(cut < 0 ? step : step.slice(0, cut))).label;
     if (label.length > 48) label = label.slice(0, 47).trimEnd() + '…';
     const id = b.node(`step${i + 1}`);
     Object.assign(b.nodes.find(n => n.id === id)!, { label, ...(process ? { process } : {}) });
@@ -175,6 +177,13 @@ function fromStateDiagram(lines: string[], b: Builder): 'RIGHT' | 'DOWN' | undef
     if (described) b.node(described[1], described[2]);
   }
   return direction;
+}
+
+// A diagram of numbered steps, one after the other, from Start to End.
+export function stepsDiagram(title: string, steps: string[], idPattern = DEFAULT_ID_PATTERN, direction?: 'RIGHT' | 'DOWN'): Diagram {
+  const b = new Builder(new RegExp(idPattern));
+  fromSteps(steps, b);
+  return { title, ...(direction ? { direction } : {}), nodes: b.nodes, edges: b.edges };
 }
 
 // Every diagram one architecture file describes. rel is the file's path relative to the project.

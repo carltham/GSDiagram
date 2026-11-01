@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { acceptChanges, checkProject, hashOf } from '../shared/check';
-import { readProcesses } from '../shared/processes';
-import { Project } from '../shared/project';
+import { acceptChanges, checkProject, hashOf } from '../../../GSDiagram/shared/check';
+import { readProcesses } from '../../../GSDiagram/shared/processes';
+import { Project } from '../../../GSDiagram/shared/project';
 
 const md = `## Invoices
 - **INVO4 Park an invoice.** Save without Accepted.

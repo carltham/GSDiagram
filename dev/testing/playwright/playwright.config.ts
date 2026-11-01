@@ -9,7 +9,7 @@ export default defineConfig({
   timeout: 120_000,
   expect: { timeout: 15_000 },
   retries: process.env.CI ? 1 : 0,
-  reporter: [['list'], ['html', { open: 'never', outputFolder: 'test-results/report' }]],
+  reporter: [['list'], ['./log-reporter.ts'], ['html', { open: 'never', outputFolder: 'test-results/report' }]],
   outputDir: 'test-results/output',
   use: { trace: 'retain-on-failure', screenshot: 'only-on-failure' },
 });

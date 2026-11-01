@@ -1,10 +1,12 @@
 // GSDiagram: diagrams of a project's processes, kept in the project's own folder and checked against its processes file.
 
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import * as vscode from 'vscode';
-import { acceptChanges } from '../shared/check';
+import { acceptChanges, modelSummary, plural, summary } from '../shared/check';
 import { isInside, resolveDataFolder } from '../shared/folder';
-import { Change, describedDiagrams, planDiagrams } from '../shared/generate';
+import { Change, describedDiagrams, planDiagrams, projectModel } from '../shared/generate';
+import { MODEL_FILE, writeModel } from '../shared/model';
 import { readConfig, writeConfig } from '../shared/project';
 import { DEFAULT_ARCHITECTURE_FOLDER } from '../shared/types';
 import { Checker } from './check';
@@ -30,10 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerHoverProvider(markdown, links),
 
     vscode.commands.registerCommand('gsdiagram.check', async () => {
-      const found = await checker.run();
-      const count = (s: string) => found.filter(f => f.severity === s).length;
-      vscode.window.showInformationMessage(
-        `GSDiagram: ${count('error')} errors, ${count('warning')} warnings, ${count('info')} processes in no diagram.`);
+      vscode.window.showInformationMessage(`GSDiagram: ${summary(await checker.run())}`);
     }),
 
     vscode.commands.registerCommand('gsdiagram.acceptChanges', async () => {
@@ -50,6 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
     }),
 
+    vscode.commands.registerCommand('gsdiagram.analyse', () => analyse(checker)),
     vscode.commands.registerCommand('gsdiagram.generate', () => drawFromArchitecture(checker, false)),
     vscode.commands.registerCommand('gsdiagram.update', () => drawFromArchitecture(checker, true)),
 
@@ -101,6 +101,29 @@ export function activate(context: vscode.ExtensionContext) {
 
   checker.run();
   return { checker };
+}
+
+// Analyse architecture: writes the model of every workspace folder's architecture files into its data folder, and
+// says what it holds and what the check found in it.
+async function analyse(checker: Checker) {
+  await checker.run();
+  const analysed = checker.all().map(c => ({ c, model: projectModel(c.project) })).filter(({ model }) => model.elements.length > 0);
+  if (analysed.length === 0) {
+    const folder = checker.all()[0]?.project.config.architectureFolder || DEFAULT_ARCHITECTURE_FOLDER;
+    return vscode.window.showErrorMessage(`GSDiagram: nothing to analyse in ${folder}.`);
+  }
+  for (const { c, model } of analysed) {
+    try {
+      await mkdir(c.project.folder, { recursive: true });
+      await writeFile(path.join(c.project.folder, MODEL_FILE), writeModel(model));
+    } catch (e) {
+      return vscode.window.showErrorMessage(`GSDiagram: ${(e as Error).message}`);
+    }
+    const found = c.findings.filter(f => f.about === 'architecture');
+    const warnings = found.filter(f => f.severity === 'warning').length;
+    vscode.window.showInformationMessage(`GSDiagram: ${modelSummary(model)}; ${plural(warnings, 'warning')} and ${plural(found.length - warnings, 'note')} `
+      + `in the Problems panel. Written to ${relative(c.project.root, path.join(c.project.folder, MODEL_FILE))}.`);
+  }
 }
 
 // Generate, or Update, in every workspace folder whose architecture files describe diagrams. The files change like an

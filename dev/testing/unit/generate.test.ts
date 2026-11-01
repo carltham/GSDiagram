@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readArchitecture, slugOf } from '../shared/architecture';
-import { checkProject } from '../shared/check';
-import { planDiagrams } from '../shared/generate';
-import { Project } from '../shared/project';
-import { Diagram } from '../shared/types';
+import { readArchitecture, slugOf } from '../../../GSDiagram/shared/architecture';
+import { checkProject } from '../../../GSDiagram/shared/check';
+import { planDiagrams } from '../../../GSDiagram/shared/generate';
+import { Project } from '../../../GSDiagram/shared/project';
+import { Diagram } from '../../../GSDiagram/shared/types';
 
 const read = (md: string) => readArchitecture('dev/architecture/flows.md', md);
 const only = (md: string) => { const found = read(md); assert.equal(found.length, 1); return found[0]; };

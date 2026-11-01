@@ -1,14 +1,16 @@
-// The command line: check, render, accept, generate, and update, for a project folder. The same code as the extension.
+// The command line: check, render, accept, analyse, generate, and update, for a project folder. The same code as the extension.
 //   node dist/cli.js check    <project>
 //   node dist/cli.js render   <project> [--chrome <path>]
 //   node dist/cli.js accept   <project>
+//   node dist/cli.js analyse  <project>
 //   node dist/cli.js generate <project>
 //   node dist/cli.js update   <project>
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { acceptChanges, checkProject } from '../shared/check';
-import { describedDiagrams, planDiagrams } from '../shared/generate';
+import { acceptChanges, checkProject, modelSummary, plural, summary } from '../shared/check';
+import { describedDiagrams, planDiagrams, projectModel } from '../shared/generate';
+import { MODEL_FILE, writeModel } from '../shared/model';
 import { readProcesses } from '../shared/processes';
 import { configuredFolder, idPattern, loadProject } from '../shared/project';
 import { DEFAULT_ARCHITECTURE_FOLDER } from '../shared/types';
@@ -22,8 +24,21 @@ async function main() {
     const findings = checkProject(project);
     for (const f of findings) console.log(`${path.relative(projectRoot, f.file)}:${f.line + 1}:${f.column + 1}: ${f.severity}: ${f.message}`);
     const count = (s: string) => findings.filter(f => f.severity === s).length;
-    console.log(`${count('error')} errors, ${count('warning')} warnings, ${count('info')} processes in no diagram.`);
+    console.log(summary(findings));
     process.exitCode = count('error') + count('warning') > 0 ? 1 : 0;
+
+  } else if (command === 'analyse') {
+    const model = projectModel(project);
+    const folder = project.config.architectureFolder || DEFAULT_ARCHITECTURE_FOLDER;
+    if (model.elements.length === 0) throw new Error(`Nothing to analyse in ${folder}.`);
+    await mkdir(project.folder, { recursive: true });
+    const file = path.join(project.folder, MODEL_FILE);
+    await writeFile(file, writeModel(model));
+    console.log(`wrote ${path.relative(projectRoot, file)}: ${modelSummary(model)}`);
+    const findings = checkProject(project).filter(f => f.about === 'architecture');
+    for (const f of findings) console.log(`${path.relative(projectRoot, f.file)}:${f.line + 1}:${f.column + 1}: ${f.severity}: ${f.message}`);
+    const warnings = findings.filter(f => f.severity === 'warning').length;
+    console.log(`${plural(warnings, 'warning')}, ${plural(findings.length - warnings, 'note')}.`);
 
   } else if (command === 'accept') {
     if (!project.processes) throw new Error('No processes file is set.');
@@ -64,7 +79,7 @@ async function main() {
     }
 
   } else {
-    console.log('Usage: gsdiagram check|render|accept|generate|update <project> [--chrome <path>]');
+    console.log('Usage: gsdiagram check|render|accept|analyse|generate|update <project> [--chrome <path>]');
     process.exitCode = 2;
   }
 }

@@ -25,6 +25,9 @@ The fixed decisions. Every part of GSDiagram follows them.
 
 - **The extension and the command line share their code:** loading a project, the check, accepting changes, generating diagrams, the layout, and the drawing. A picture drawn by the command line is drawn by the same code as the editor's.
 - **The shared code does not depend on VS Code.**
+- Rule: GSDiagram/shared/ must not use GSDiagram/extension/
+- Rule: GSDiagram/shared/ must not use GSDiagram/cli/
+- Rule: Pages must not use Extension
 
 ## The layout is automatic
 

@@ -9,20 +9,20 @@ const node = { bundle: true, platform: 'node', format: 'cjs', target: 'node20', 
 // The pages are minified, except while watching; the source maps still point at the source.
 const browser = { bundle: true, platform: 'browser', format: 'iife', target: 'es2022', sourcemap: true, minify: !watch, logLevel: 'info' };
 
-const tests = (await readdir('test')).filter(f => f.endsWith('.test.ts')).map(f => `test/${f}`);
+const tests = (await readdir('dev/testing/unit')).filter(f => f.endsWith('.test.ts')).map(f => `dev/testing/unit/${f}`);
 
 const builds = [
-  { ...node, entryPoints: ['src/extension.ts'], outfile: 'dist/extension.js', external: ['vscode'] },
-  { ...node, entryPoints: ['cli/cli.ts'], outfile: 'dist/cli.js', external: ['playwright-core'] },
+  { ...node, entryPoints: ['GSDiagram/extension/extension.ts'], outfile: 'dist/extension.js', external: ['vscode'] },
+  { ...node, entryPoints: ['GSDiagram/cli/cli.ts'], outfile: 'dist/cli.js', external: ['playwright-core'] },
   { ...node, entryPoints: tests, outdir: 'dist/test' },
-  { ...node, entryPoints: ['test/vscode/run.ts', 'test/vscode/suite.ts'], outdir: 'dist/test/vscode', external: ['vscode', 'mocha', '@vscode/test-electron'] },
-  { ...browser, entryPoints: ['webview/main.ts'], outfile: 'dist/webview.js' },
-  { ...browser, entryPoints: ['webview/render.ts'], outfile: 'dist/render.js' },
+  { ...node, entryPoints: ['dev/testing/vscode/run.ts', 'dev/testing/vscode/suite.ts'], outdir: 'dist/test/vscode', external: ['vscode', 'mocha', '@vscode/test-electron'] },
+  { ...browser, entryPoints: ['GSDiagram/webview/main.ts'], outfile: 'dist/webview.js' },
+  { ...browser, entryPoints: ['GSDiagram/webview/render.ts'], outfile: 'dist/render.js' },
 ];
 
 await mkdir('dist', { recursive: true });
-await copyFile('webview/style.css', 'dist/style.css');
-await copyFile('webview/render.html', 'dist/render.html');
+await copyFile('GSDiagram/webview/style.css', 'dist/style.css');
+await copyFile('GSDiagram/webview/render.html', 'dist/render.html');
 
 if (watch) {
   for (const b of builds) await (await esbuild.context(b)).watch();

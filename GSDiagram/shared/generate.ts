@@ -6,6 +6,7 @@
 import path from 'node:path';
 import { Described, readArchitecture, slugOf } from './architecture';
 import { parseDiagram } from './diagram';
+import { analyseArchitecture, ArchModel, modelViews } from './model';
 import { DIAGRAM_SUFFIX, idPattern, Project } from './project';
 import { Diagram } from './types';
 
@@ -17,10 +18,19 @@ export interface Change {
 
 const write = (d: Diagram) => JSON.stringify(d, null, 2) + '\n';
 
-// Every diagram the project's architecture files describe.
-export function describedDiagrams(project: Project): Described[] {
-  return project.architecture.flatMap(({ file, text }) =>
-    readArchitecture(path.relative(project.root, file).split(path.sep).join('/'), text, idPattern(project.config)));
+const relative = (project: Project, file: string) => path.relative(project.root, file).split(path.sep).join('/');
+
+// The architecture model of the project's architecture files.
+export function projectModel(project: Project): ArchModel {
+  return analyseArchitecture(project.architecture.map(({ file, text }) => ({ rel: relative(project, file), text })), path.basename(project.root));
+}
+
+// Every diagram the project's architecture files describe: those drawn in them, Mermaid blocks and marked sections,
+// and the views of the model. A diagram drawn in them wins over a view with the same source.
+export function describedDiagrams(project: Project, model = projectModel(project)): Described[] {
+  const drawn = project.architecture.flatMap(({ file, text }) => readArchitecture(relative(project, file), text, idPattern(project.config)));
+  const sources = new Set(drawn.map(d => d.source));
+  return [...drawn, ...modelViews(model, idPattern(project.config)).filter(v => !sources.has(v.source))];
 }
 
 // The diagram as its source describes it, with what the file keeps of its own: dragged positions, and what was accepted.

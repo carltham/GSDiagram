@@ -1,11 +1,11 @@
-// Runs inside the test instance of VS Code, on test/fixture.
+// Runs inside the test instance of VS Code, on dev/testing/fixture.
 
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import Mocha from 'mocha';
 import * as vscode from 'vscode';
 
-const fixture = path.resolve(__dirname, '../../../test/fixture');
+const fixture = path.resolve(__dirname, '../../../dev/testing/fixture');
 const diagram = vscode.Uri.file(path.join(fixture, '.gsdiagram/order.diagram.json'));
 const processes = vscode.Uri.file(path.join(fixture, 'docs/processes.md'));
 

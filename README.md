@@ -73,14 +73,43 @@ It runs whenever a diagram, `config.json`, or a Markdown file changes, and on **
 | A process whose text has changed since the diagram was accepted | Warning |
 | A generated diagram whose source section is gone from the architecture files | Warning |
 | A process that is in no diagram | Information |
+| In the architecture files: a name in a Uses cell that is no component, or could be two; a component described twice; a cycle of uses; a use a rule forbids; a rule about nothing | Warning |
+| In the architecture files: a component nothing uses and no flow names; data nothing reads or writes; a flow that names no component | Information |
 
 After checking a diagram against the changed processes, **GSDiagram: Accept process changes** records their current text in the diagram's `drawn`.
 
 In the processes file, a line above each process says which diagrams use it, and opens them. Hovering over the process says the same.
 
+## The architecture
+
+GSDiagram reads a model of the project from the Markdown files in `dev/architecture`, in all its subfolders, and checks that they hold together. Another folder in the project can be set as `architectureFolder` in `config.json`. It reads what the files already have, by the headers of their tables and the headings of their lists:
+
+| In the architecture files | In the model |
+|---|---|
+| A table with a **Component** column and a **Uses** column | Components, and which use which. The heading above the table is their layer. |
+| A table with an **Outside** column | External systems |
+| The bold names in the list under **Who uses it** (or Users, Actors) | Actors |
+| A table with **File**, **Read**, and **Written** columns | Data, and whether anything reads or writes it |
+| In a file whose name or title says flow, a section with numbered steps | A flow, and the components its steps name in `code` |
+| A list item `Rule: shared/ must not use src/` | A rule. Each side is a component, a folder ending in `/`, or a layer. |
+
+A component is named by its path in the project, `` `shared/check` ``. In a Uses cell, a short name, `` `types` ``, is the component it ends, in the same layer first. Names after a semicolon, `` `shared/types`; talks to `webview/main` by messages ``, are links but not uses.
+
+```markdown
+## Shared
+
+| Component | What it does | Uses |
+|---|---|---|
+| `shared/check` | The check. | `types`, `project` |
+
+- Rule: shared/ must not use src/
+```
+
+What does not hold together is in the Problems panel, at its place in the architecture file; see the check above. **GSDiagram: Analyse architecture** writes the model to `architecture.json` in the data folder, and says what it holds.
+
 ## Diagrams from the architecture files
 
-**GSDiagram: Generate diagrams** draws the diagrams that the Markdown files in `dev/architecture` describe, in all its subfolders. Another folder in the project can be set as `architectureFolder` in `config.json`. A diagram is described by:
+**GSDiagram: Generate diagrams** draws the diagrams of the model: the context, with the actors and external systems; the components, with their uses; and each flow, step after step. It also draws the diagrams that the architecture files describe themselves:
 
 - A Mermaid flowchart or state diagram. Other Mermaid diagrams, such as sequence diagrams, are not drawn.
 
@@ -107,9 +136,9 @@ In the processes file, a line above each process says which diagrams use it, and
 
   A marked section without arrows is drawn from its numbered steps, one after the other, from Start to End. A step's label is its text up to the first colon or full stop.
 
-A process id in parentheses, `(ORDE1)`, links a box or an arrow to that process, and the check checks it against the processes file. A section without a marker is not drawn, even if it has arrows or steps.
+A process id in parentheses, `(ORDE1)`, links a box or an arrow to that process, and the check checks it against the processes file. Outside a file about flows, a section without a marker is not drawn, even if it has arrows or steps. A diagram described in a section wins over a flow of the same section.
 
-Each diagram is named after its heading, `order-life-cycle.diagram.json`, unless the marker names it: `<!-- diagram: orders -->`. A marker before a Mermaid block names that block. The diagram records where it was described in `source`, such as `dev/architecture/orders.md#order-life-cycle`. Generate never changes a diagram that is there.
+The context is `context.diagram.json` and the components `components.diagram.json`. Every other diagram is named after its heading, `order-life-cycle.diagram.json`, unless the marker names it: `<!-- diagram: orders -->`. A marker before a Mermaid block names that block. The diagram records where it was described in `source`, such as `dev/architecture/orders.md#order-life-cycle`. Generate never changes a diagram that is there.
 
 **GSDiagram: Update diagrams** does the same, and draws each generated diagram again from its source: change the architecture file, not the diagram. Dragged positions and accepted process changes are kept. A diagram without `source`, drawn by hand, is never changed. When the section of a diagram's source is gone, the check says so.
 
@@ -123,11 +152,12 @@ The same check and drawing, outside VS Code, after `npm run build`:
 node dist/cli.js check    <project>
 node dist/cli.js render   <project> [--chrome /usr/bin/google-chrome]
 node dist/cli.js accept   <project>
+node dist/cli.js analyse  <project>
 node dist/cli.js generate <project>
 node dist/cli.js update   <project>
 ```
 
-`check` exits with 1 when there are errors or warnings. `render` needs Chrome or Chromium.
+`check` exits with 1 when there are errors or warnings. `analyse` writes the model and prints the findings about the architecture. `render` needs Chrome or Chromium.
 
 ## Development
 
@@ -141,11 +171,11 @@ npm run package        # gsdiagram-<version>.vsix
 npm run release        # every test, then the package
 ```
 
-The UI tests are in `dev/testing/playwright`, a Node project of its own with its own Playwright: install it once with `npm --prefix dev/testing/playwright install`. Each test starts its own VS Code on a fresh copy of `test/fixture`, then clicks, drags, types, and uses the command palette, the Problems panel, the lenses, and the open dialogs as a user would. On Linux, `xvfb-run -a npm run test:ui` keeps the windows off the screen. A failed test leaves a screenshot and a trace in `dev/testing/playwright/test-results/`; `npm --prefix dev/testing/playwright run report` shows them.
+The UI tests are in `dev/testing/playwright`, a Node project of its own with its own Playwright: install it once with `npm --prefix dev/testing/playwright install`. Each test starts its own VS Code on a fresh copy of `dev/testing/fixture`, then clicks, drags, types, and uses the command palette, the Problems panel, the lenses, and the open dialogs as a user would. On Linux, `xvfb-run -a npm run test:ui` keeps the windows off the screen. A failed test leaves a screenshot and a trace in `dev/testing/playwright/test-results/`; `npm --prefix dev/testing/playwright run report` shows them.
 
 The tests that change files on disk need VS Code's file watcher. On Linux it stops working when the user's inotify instances run out (`fs.inotify.max_user_instances`, often 128); close other editors, or raise the limit.
 
-F5 in VS Code opens a window with the extension and `test/fixture`. Install a package with `code --install-extension gsdiagram-<version>.vsix`.
+F5 in VS Code opens a window with the extension and `dev/testing/fixture`. Install a package with `code --install-extension gsdiagram-<version>.vsix`.
 
 `npm run build` minifies the pages of the editor; `npm run watch` leaves them readable.
 

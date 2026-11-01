@@ -1,4 +1,4 @@
-// Starts the real VS Code with the extension on a fresh copy of test/fixture, and drives it as a user would:
+// Starts the real VS Code with the extension on a fresh copy of dev/testing/fixture, and drives it as a user would:
 // the command palette, the Problems panel, editors, notifications, and the page inside the GSDiagram editor.
 
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -51,7 +51,7 @@ export class VSCode {
     const temp = await mkdtemp(path.join(tmpdir(), 'gsdiagram-ui-'));
     const project = path.join(temp, 'project');
     const userData = path.join(temp, 'user-data');
-    await cp(path.join(root, 'test/fixture'), project, { recursive: true });
+    await cp(path.join(root, 'dev/testing/fixture'), project, { recursive: true });
     await mkdir(path.join(userData, 'User'), { recursive: true });
     await writeFile(path.join(userData, 'User/settings.json'), JSON.stringify(SETTINGS, null, 2));
 
@@ -325,6 +325,8 @@ export class Diagram {
 
   // Clicks the empty canvas, away from every box and arrow.
   async clickBackground(): Promise<void> {
+    // Selecting a box can scroll a wide drawing; its left edge is then outside the editor, and a click there is lost.
+    await this.svg().evaluate(s => s.parentElement!.scrollTo(0, 0));
     const svg = (await this.svg().boundingBox())!;
     await this.page.mouse.click(svg.x + 5, svg.y + svg.height - 5);
   }

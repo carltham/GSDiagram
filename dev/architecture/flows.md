@@ -91,6 +91,15 @@ Without a diagram editor in front, the command says to open a diagram first.
 
 Without a diagram open, it says to open one; without a processes file, it says none is set.
 
+## Analyse architecture
+
+1. The user runs **GSDiagram: Analyse architecture**.
+2. The check runs first; `GSDiagram/shared/review` adds its findings about the architecture to the Problems panel.
+3. If no workspace folder's architecture files hold anything for the model, a message says so and nothing is written.
+4. For each workspace folder, `GSDiagram/extension/extension` asks `GSDiagram/shared/generate` for the model, which `GSDiagram/shared/model` reads from the architecture files.
+5. `GSDiagram/extension/extension` writes the model to `architecture.json` in the data folder, creating the folder if it is not there.
+6. A message says what the model holds and how many warnings and notes are in the Problems panel.
+
 ## Generate diagrams
 
 1. The user runs **GSDiagram: Generate diagrams**.

@@ -8,9 +8,9 @@ Three levels, each run on its own:
 
 | Level | Run with | What | Tests |
 |---|---|---|---|
-| **Unit** | `npm test` | The shared code in Node: reading processes, the data folder and the setting, every finding of the check, Accept, the layout, reading architecture files, Generate and Update. | 31, in `test/*.test.ts` |
-| **Extension** | `npm run test:vscode` | The extension in a test instance of VS Code, on `test/fixture`: findings reach the Problems panel, a diagram opens in the GSDiagram editor, the lenses. | 3, in `test/vscode/` |
-| **UI** | `npm run test:ui` | The real VS Code, driven by Playwright as a user would: the command palette, the Problems panel, the lenses and hover, the editors, the dialogs, and the page inside the GSDiagram editor; clicks, drags, typing, undo, saving. | 55, in `dev/testing/playwright/tests/` |
+| **Unit** | `npm test` | The shared code in Node: reading processes, the data folder and the setting, every finding of the check, Accept, the layout, reading architecture files, the model and its review, Generate and Update. | 43, in `dev/testing/unit/*.test.ts` |
+| **Extension** | `npm run test:vscode` | The extension in a test instance of VS Code, on `dev/testing/fixture`: findings reach the Problems panel, a diagram opens in the GSDiagram editor, the lenses. | 3, in `dev/testing/vscode/` |
+| **UI** | `npm run test:ui` | The real VS Code, driven by Playwright as a user would: the command palette, the Problems panel, the lenses and hover, the editors, the dialogs, and the page inside the GSDiagram editor; clicks, drags, typing, undo, saving. | 59, in `dev/testing/playwright/tests/` |
 
 The UI tests by area:
 
@@ -21,8 +21,9 @@ The UI tests by area:
 | The processes file: lenses and hover | 8 |
 | The settings: Set processes file, Choose data folder, refusals | 7 |
 | Generate and Update | 6 |
+| Analyse architecture and its findings | 4 |
 
-**The fixture,** `test/fixture/`, is a small project: a data folder with `config.json` and one diagram, and a processes file with three processes. The diagram uses one process that is not in the file, and the file has one process that is in no diagram, so a warning and an information finding are there from the start; the tests make the other findings themselves.
+**The fixture,** `dev/testing/fixture/`, is a small project: a data folder with `config.json` and one diagram, and a processes file with three processes. The diagram uses one process that is not in the file, and the file has one process that is in no diagram, so a warning and an information finding are there from the start; the tests make the other findings themselves.
 
 **Each UI test** starts its own VS Code, of a fixed version, on a fresh copy of the fixture, with its own user data and settings, one test at a time. A failed test leaves a screenshot and a trace.
 

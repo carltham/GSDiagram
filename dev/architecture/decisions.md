@@ -42,7 +42,7 @@ The choices of technology and design, and why they were made.
 
 ## One shared code, one render page
 
-**Chosen:** the check, the layout, and the drawing in `shared/`, used by the extension, the command line, and both pages; the command line draws PNGs by opening the render page in headless Chrome through `playwright-core`, with the system's Chrome.
+**Chosen:** the check, the layout, and the drawing in `GSDiagram/shared/`, used by the extension, the command line, and both pages; the command line draws PNGs by opening the render page in headless Chrome through `playwright-core`, with the system's Chrome.
 
 **Why:** a picture checked from the command line is drawn by exactly the code that draws it in the editor. `playwright-core` brings no browser of its own, so nothing large is downloaded.
 
@@ -53,6 +53,12 @@ The choices of technology and design, and why they were made.
 **Instead of:** copying the processes' text into the diagram.
 
 **Why:** the diagram stays small and readable, and any change to a process's title or text shows up, until the user has looked at the diagram and accepted it.
+
+## A model of the architecture, not a drawing
+
+**Chosen:** the architecture files are read into a model, elements with a kind and links with a meaning, which is checked and drawn. Not Mermaid or another drawing language in between.
+
+**Why:** a drawing has boxes and lines, but no meaning to check: that a name is a component, that shared code does not use the extension, that nothing goes round in a cycle. The model is read from the tables and lists the files already have, so nothing is written twice. Later, the code can be checked against the same model.
 
 ## Diagrams from the architecture's own Markdown
 

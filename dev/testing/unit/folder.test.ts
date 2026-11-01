@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { test } from 'node:test';
-import { folderSetting, resolveDataFolder } from '../shared/folder';
+import { folderSetting, resolveDataFolder } from '../../../GSDiagram/shared/folder';
 
 const root = path.resolve('/projects/one');
 

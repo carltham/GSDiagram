@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "esModuleInterop": true
   },
-  "include": ["src", "shared", "webview", "cli", "test"]
+  "include": ["GSDiagram", "dev/testing/unit", "dev/testing/vscode"]
 }

@@ -47,6 +47,11 @@
         "category": "GSDiagram"
       },
       {
+        "command": "gsdiagram.analyse",
+        "title": "Analyse architecture",
+        "category": "GSDiagram"
+      },
+      {
         "command": "gsdiagram.generate",
         "title": "Generate diagrams",
         "category": "GSDiagram"
@@ -93,6 +98,7 @@
     "check": "node dist/cli.js check",
     "render": "node dist/cli.js render",
     "accept": "node dist/cli.js accept",
+    "analyse": "node dist/cli.js analyse",
     "generate": "node dist/cli.js generate",
     "update": "node dist/cli.js update",
     "vscode:prepublish": "node esbuild.mjs",
