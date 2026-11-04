@@ -125,7 +125,7 @@ export class ArchitectureTree extends Tree {
     });
   }
 
-  // The model of one architecture: Context, Components by layer, Data, Flows, Rules, and its findings.
+  // The model of one architecture: Context, Components by group, Data, Flows, Rules, and its findings.
   private groups(checked: Checked, a: Architecture, model: ArchModel): Item[] {
     const root = checked.project.root;
     const files = new Set(a.files.map(f => f.file));
@@ -161,11 +161,11 @@ export class ArchitectureTree extends Tree {
 
     const components = once('component');
     if (components.length) {
-      const layers = [...new Set(components.map(c => c.layer ?? ''))];
-      const children = layers.length < 2 ? components.map(component)
-        : layers.map(l => {
-          const inLayer = components.filter(c => (c.layer ?? '') === l).map(component);
-          return item(l || 'Other', { id: `${key}:layer:${l}`, description: String(inLayer.length), children: inLayer, iconPath: new vscode.ThemeIcon('layers') });
+      const groupNames = [...new Set(components.map(c => c.group ?? ''))];
+      const children = groupNames.length < 2 ? components.map(component)
+        : groupNames.map(g => {
+          const inGroup = components.filter(c => (c.group ?? '') === g).map(component);
+          return item(g || 'Other', { id: `${key}:group:${g}`, description: String(inGroup.length), children: inGroup, iconPath: new vscode.ThemeIcon('folder') });
         });
       groups.push(item('Components', { id: `${key}:components`, description: String(components.length), children, iconPath: new vscode.ThemeIcon('symbol-module') }));
     }

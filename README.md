@@ -68,7 +68,7 @@ A `*.diagram.json` file opens in the diagram editor. **Reopen Editor With… →
 The GSDiagram icon in the Activity Bar, three boxes with arrows, opens GSDiagram's side bar:
 
 - **Diagrams:** every diagram of the project, whether it was generated, and its warnings. A click opens it. The title bar has Generate, Update, and Check.
-- **Architecture:** the model of the architecture files, see below: the context, the components by layer, the data, the flows, the rules, and the count of findings. A click goes to where each is written; one with a finding is marked. The title bar has Analyse architecture and Check.
+- **Architecture:** the model of the architecture files, see below: the context, the components by group, the data, the flows, the rules, and the count of findings. A click goes to where each is written; one with a finding is marked. The title bar has Analyse architecture and Check.
 
 A project without diagrams shows how to get started instead: Generate diagrams, Set processes file, Choose data folder, and the README. Both lists follow the check, so they change as the files are typed.
 
@@ -96,14 +96,14 @@ GSDiagram reads a model of the project from the Markdown files in `dev/architect
 
 | In the architecture files | In the model |
 |---|---|
-| A table with a **Component** column and a **Uses** column | Components, and which use which. The heading above the table is their layer. |
+| A table with a **Component** column and a **Uses** column | Components, and which use which. The heading above the table is their group. |
 | A table with an **Outside** column | External systems |
 | The bold names in the list under **Who uses it** (or Actors, Roles, People) | Actors |
 | A table with **File**, **Read**, and **Written** columns | Data, and whether anything reads or writes it |
 | In a file whose name or title says flow, a section with numbered steps | A flow, and the components its steps name in `code` |
-| A list item `Rule: shared/ must not use src/` | A rule. Each side is a component, a folder ending in `/`, or a layer. |
+| A list item `Rule: shared/ must not use src/` | A rule. Each side is a component, a folder ending in `/`, a group, or a pattern with `*`. |
 
-A component is named by its path in the project, `` `shared/check` ``. In a Uses cell, a short name, `` `types` ``, is the component it ends, in the same layer first. Names after a semicolon, `` `shared/types`; talks to `webview/main` by messages ``, are links but not uses.
+A component is named by its path in the project, `` `shared/check` ``. In a Uses cell, a short name, `` `types` ``, is the component it ends, in the same group first. Names after a semicolon, `` `shared/types`; talks to `webview/main` by messages ``, are links but not uses.
 
 ```markdown
 ## Shared

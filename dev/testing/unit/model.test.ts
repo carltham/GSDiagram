@@ -82,10 +82,10 @@ const model = (extra?: Record<string, string>) => analyseArchitecture(files(extr
 const names = (m: ArchModel, kind: string) => m.elements.filter(e => e.kind === kind).map(e => e.name);
 const links = (m: ArchModel, kind: string) => m.links.filter(l => l.kind === kind).map(l => `${l.from.replace(/^\w+:/, '')} > ${l.to.replace(/^\w+:/, '')}`);
 
-test('components come from a table with Component and Uses columns, in the layer of their heading', () => {
+test('components come from a table with Component and Uses columns, in the group of their heading', () => {
   const m = model();
   assert.deepEqual(names(m, 'component'), ['shared/types', 'shared/check', 'shared/project', 'src/extension', 'src/editor', 'webview/main']);
-  assert.deepEqual(m.elements.filter(e => e.kind === 'component').map(e => e.layer), ['Shared', 'Shared', 'Shared', 'Extension', 'Extension', 'Pages']);
+  assert.deepEqual(m.elements.filter(e => e.kind === 'component').map(e => e.group), ['Shared', 'Shared', 'Shared', 'Extension', 'Extension', 'Pages']);
   assert.deepEqual(m.elements.find(e => e.name === 'shared/check')!.at, { file: 'dev/architecture/components.md', line: 7, column: 3, length: 12 });
 });
 
@@ -160,7 +160,7 @@ test('a use that a rule forbids is a warning at the use; a rule about nothing is
     'A cycle: shared/types uses src/editor uses shared/types.',
     'shared/types uses src/editor, but the rule at principles.md line 3 says shared/ must not use src/.',
     'webview/main uses src/editor, but the rule at principles.md line 4 says Pages must not use src/editor.',
-    'lib/ is no component, folder, or layer in the architecture.',
+    'lib/ is no component, folder, or group in the architecture.',
   ]);
   assert.equal(found[1].at.file, 'dev/architecture/components.md');
 });

@@ -38,7 +38,7 @@ export function reviewModel(model: ArchModel): Note[] {
   for (const rule of model.rules) {
     const from = new Set(ruleSide(model, rule.from)), to = new Set(ruleSide(model, rule.to));
     if (from.size === 0) {
-      notes.push({ at: rule.at, severity: 'warning', message: `${rule.from} is no component, folder, or layer in the architecture.` });
+      notes.push({ at: rule.at, severity: 'warning', message: `${rule.from} is no component, folder, or group in the architecture.` });
       continue;
     }
     for (const l of uses.filter(l => from.has(l.from) && to.has(l.to)))

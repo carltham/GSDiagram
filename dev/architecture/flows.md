@@ -13,7 +13,7 @@ What happens, step by step, for each thing a user does.
 
 1. The user clicks the GSDiagram icon in the Activity Bar.
 2. `GSDiagram/extension/sidebar` lists the diagrams of each workspace folder from the last check: by name, `generated` when it has a `source`, and its count of findings, marked by the worst.
-3. It lists each architecture that `GSDiagram/shared/architectures` finds, a group of its own when there are several, archived ones closed: its model, read by `GSDiagram/shared/model`, as Context, Components by layer, Data, Flows, and Rules, each with its count, and last the count of findings about it.
+3. It lists each architecture that `GSDiagram/shared/architectures` finds, a group of its own when there are several, archived ones closed: its model, read by `GSDiagram/shared/model`, as Context, Components by group, Data, Flows, and Rules, each with its count, and last the count of findings about it.
 4. A list with nothing in it shows its welcome instead: for Diagrams, Generate diagrams, Set processes file, Choose data folder, and Open the README; for Architecture, what to write, and Open the README.
 5. A click on a diagram opens it in the GSDiagram editor; on an element of the model, its file at its line; on the count of findings, the Problems panel.
 6. Each time the check has run, both lists are built again.

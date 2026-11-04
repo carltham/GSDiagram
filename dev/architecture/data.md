@@ -116,7 +116,7 @@ Further:
 - **Its source** is the file, relative to the project, `#` and the heading's anchor. A second diagram under the same heading gets `-2`, a third `-3`.
 - **A described diagram needs an arrow, or at least two boxes.**
 
-The architecture files are also read as a model of the project, by the headers of their tables and the headings of their lists: components from a table with Component and Uses columns, external systems from an Outside column, actors from the bold names under Who uses it, Actors, Roles, or People, data from File, Read, and Written columns, flows from the numbered steps in a file whose name or title says flow, and rules from items `Rule: <from> must not use <to>`. The views of the model, the context, the components, and each flow, are diagrams too; a diagram described in a section wins over a flow of the same section.
+The architecture files are also read as a model of the project, by the headers of their tables and the headings of their lists: components from a table with Component and Uses columns, external systems from an Outside column, actors from the bold names under Who uses it, Actors, Roles, or People, data from File, Read, and Written columns, flows from the numbered steps in a file whose name or title says flow, and rules from items `Rule: <from> must not use <to>`, where each side is a component, a folder ending in `/`, a group, or a pattern with `*`. The views of the model, the context, the components, and each flow, are diagrams too; a diagram described in a section wins over a flow of the same section.
 
 ## `architecture.json`
 

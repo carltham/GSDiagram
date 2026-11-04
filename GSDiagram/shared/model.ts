@@ -1,13 +1,13 @@
 // The architecture model: what the architecture files say the system is made of, read from their tables and lists.
-//   Components: a table with a Component column and a Uses column. The heading above the table is their layer.
+//   Components: a table with a Component column and a Uses column. The heading above the table is their group.
 //   External systems: a table with an Outside column (or External, or System).
 //   Actors: the bold names of the list items under a heading Who uses it (or Actors, Roles, People). Not Users: in a
 //   project's own architecture, that is as often a screen, whose list is of its controls.
 //   Data: a table with File, Read, and Written columns.
 //   Flows: in a file whose name or title says flow, every section with numbered steps.
-//   Rules: list items "Rule: <from> must not use <to>", where each side is a component, a folder ending in /, or a layer.
+//   Rules: list items "Rule: <from> must not use <to>", where each side is a component, a folder ending in /, a group, or a pattern with *.
 // A component's name is its path in the project: shared/check for shared/check.ts. In a Uses cell, a short name, types,
-// is the component of that name, in the same layer first. Names after a semicolon, "talks to `webview/main` by
+// is the component of that name, in the same group first. Names after a semicolon, "talks to `webview/main` by
 // messages", are links too, but not uses in the code.
 
 import { Described, plain, slugOf, stepsDiagram } from './architecture';
@@ -22,8 +22,8 @@ export interface ArchElement {
   id: string;
   kind: ElementKind;
   name: string;
-  // A component's layer; a step's flow.
-  layer?: string;
+  // A component's group; a step's flow.
+  group?: string;
   flow?: string;
   // Data: whether anything reads it, or writes it.
   read?: boolean;
@@ -160,7 +160,7 @@ const no = (text: string) => /^(no|never|none|nothing|—|–|-)?$/i.test(plain(
 // Every architecture file, read into one model. rel is a file's path relative to the project.
 export function analyseArchitecture(files: { rel: string; text: string }[], system: string): ArchModel {
   const model: ArchModel = { system, elements: [], links: [], rules: [], unresolved: [], views: { flows: [] } };
-  const pending: { from: string; layer?: string; name: string; kind: 'uses' | 'talks' | 'names'; label?: string; at: Place; quiet?: boolean }[] = [];
+  const pending: { from: string; group?: string; name: string; kind: 'uses' | 'talks' | 'names'; label?: string; at: Place; quiet?: boolean }[] = [];
   const add = (e: ArchElement) => { model.elements.push(e); return e.id; };
 
   for (const { rel, text } of files) {
@@ -177,10 +177,10 @@ export function analyseArchitecture(files: { rel: string; text: string }[], syst
           if (comp >= 0 && uses >= 0 && cells[comp]) {
             const { name, ...p } = nameOf(cells[comp]);
             if (!name) continue;
-            const id = add({ id: `component:${name}`, kind: 'component', name, layer: section.heading || undefined, at: at(line.n, p.column, p.length) });
+            const id = add({ id: `component:${name}`, kind: 'component', name, group: section.heading || undefined, at: at(line.n, p.column, p.length) });
             if (!model.views.components) model.views.components = `${rel}${section.top ? `#${section.top}` : ''}`;
             for (const r of cells[uses] ? referencesOf(cells[uses]) : [])
-              pending.push({ from: id, layer: section.heading, name: r.name, kind: r.kind, label: r.label, at: at(line.n, r.column, r.length) });
+              pending.push({ from: id, group: section.heading, name: r.name, kind: r.kind, label: r.label, at: at(line.n, r.column, r.length) });
           } else if (outside >= 0 && cells[outside]) {
             const { name, ...p } = nameOf(cells[outside]);
             if (name) add({ id: `external:${slugOf(name)}`, kind: 'external', name, at: at(line.n, p.column, p.length) });
@@ -229,30 +229,30 @@ export function analyseArchitecture(files: { rel: string; text: string }[], syst
   }
 
   for (const r of pending) {
-    const candidates = resolve(model, r.name, r.layer);
+    const candidates = resolve(model, r.name, r.group);
     if (candidates.length === 1) model.links.push({ from: r.from, to: candidates[0], kind: r.kind, ...(r.label ? { label: r.label } : {}), at: r.at });
     else if (!r.quiet) model.unresolved.push({ from: r.from, name: r.name, candidates, at: r.at });
   }
   return model;
 }
 
-// The components a name can stand for: the one of that name, or else those it ends, in the same layer first.
-export function resolve(model: ArchModel, name: string, layer?: string): string[] {
+// The components a name can stand for: the one of that name, or else those it ends, in the same group first.
+export function resolve(model: ArchModel, name: string, group?: string): string[] {
   const n = bare(name);
   const components = model.elements.filter(e => e.kind === 'component');
   const exact = components.filter(c => bare(c.name) === n);
   if (exact.length) return [...new Set(exact.map(c => c.id))];
   const ending = components.filter(c => bare(c.name).endsWith(`/${n}`));
-  const near = ending.filter(c => c.layer === layer);
+  const near = ending.filter(c => c.group === group);
   return [...new Set((near.length === 1 ? near : ending).map(c => c.id))];
 }
 
-// The components one side of a rule stands for: a folder ending in /, a layer, a pattern with *, or a component.
+// The components one side of a rule stands for: a folder ending in /, a group, a pattern with *, or a component.
 export function ruleSide(model: ArchModel, side: string): string[] {
   const components = model.elements.filter(e => e.kind === 'component');
   if (side.endsWith('/')) return components.filter(c => c.name.startsWith(side)).map(c => c.id);
-  const layer = components.filter(c => c.layer?.toLowerCase() === side.toLowerCase());
-  if (layer.length) return layer.map(c => c.id);
+  const group = components.filter(c => c.group?.toLowerCase() === side.toLowerCase());
+  if (group.length) return group.map(c => c.id);
   if (side.includes('*')) {
     const pattern = new RegExp(`^${side.split('*').map(s => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('.*')}$`);
     return components.filter(c => pattern.test(c.name)).map(c => c.id);
