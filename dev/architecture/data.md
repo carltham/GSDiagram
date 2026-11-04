@@ -104,7 +104,7 @@ Every `.md` file under the architecture folder, in all its subfolders. A diagram
 - Sent → End
 ```
 
-`→`, `->`, and `-->` are arrows; the text after the colon labels the last arrow of the item; `Start`, `End`, and `[*]` are the dots. Without any such item, the section's numbered steps are drawn one after the other, from Start to End, each labelled with its text up to the first colon, full stop, or semicolon, cut at 48 characters.
+`→`, `->`, and `-->` are arrows; the text after the colon labels the last arrow of the item; `Start`, `End`, and `[*]` are the dots. Without any such item, the section's numbered steps are drawn one after the other, from Start to End, each labelled with its text up to the first colon, full stop, or semicolon; a long label wraps over several lines, and its box in the editor shows three at a time and scrolls the rest.
 
 Further:
 

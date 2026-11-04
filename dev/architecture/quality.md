@@ -8,9 +8,9 @@ Three levels, each run on its own:
 
 | Level | Run with | What | Tests |
 |---|---|---|---|
-| **Unit** | `npm test` | The shared code in Node: reading processes, the data folder and the setting, every finding of the check, Accept, the layout, reading architecture files, the model and its review, several architectures, Generate and Update. | 51, in `dev/testing/unit/*.test.ts` |
+| **Unit** | `npm test` | The shared code in Node: reading processes, the data folder and the setting, every finding of the check, Accept, the layout, reading architecture files, the model and its review, several architectures, Generate and Update. | 54, in `dev/testing/unit/*.test.ts` |
 | **Extension** | `npm run test:vscode` | The extension in a test instance of VS Code, on `dev/testing/fixture`: findings reach the Problems panel, a diagram opens in the GSDiagram editor, the lenses. | 3, in `dev/testing/vscode/` |
-| **UI** | `npm run test:ui` | The real VS Code, driven by Playwright as a user would: the command palette, the Problems panel, the lenses and hover, the editors, the dialogs, the side bar, and the page inside the GSDiagram editor; clicks, drags, typing, undo, saving. | 70, in `dev/testing/playwright/tests/` |
+| **UI** | `npm run test:ui` | The real VS Code, driven by Playwright as a user would: the command palette, the Problems panel, the lenses and hover, the editors, the dialogs, the side bar, and the page inside the GSDiagram editor; clicks, drags, typing, undo, saving. | 71, in `dev/testing/playwright/tests/` |
 
 The UI tests by area:
 

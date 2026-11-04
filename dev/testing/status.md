@@ -6,9 +6,9 @@ Last updated: 2026-11-01 12:06.
 
 | Suite | Run with | Tests | Last result |
 |---|---|---|---|
-| Unit | `npm test` | 51 | 51 passed (2026-11-01 11:53) |
+| Unit | `npm test` | 54 | 54 passed (2026-11-01) |
 | Extension | `npm run test:vscode` | 3 | 3 passed (2026-11-01 11:53) |
-| UI | `npm run test:ui` | 70 | 70 passed (2026-11-01 12:06) |
+| UI | `npm run test:ui` | 71 | 71 passed (2026-11-01 18:18) |
 
 ## Open problems
 
@@ -20,4 +20,4 @@ Last updated: 2026-11-01 12:06.
 
 ## Not committed
 
-Version 0.2.0, and the progress bar of Generate and Update. Several architectures per project: `GSDiagram/shared/architectures.ts`, `GSDiagram/extension/architectures.ts`, the side bar's groups, and their tests, `dev/testing/unit/architectures.test.ts` and `dev/testing/playwright/tests/architectures.spec.ts`.
+Version 0.2.1. A long label wraps over several lines instead of being cut at 48 characters with `…`. A box is three lines high, and the mouse wheel scrolls a longer text; a PNG shows every box whole. `GSDiagram/shared/layout.ts`, `draw.ts`, `architecture.ts`, `GSDiagram/webview/main.ts`, 3 unit tests and 1 UI test. All pass: unit 54, extension 3, UI 71.

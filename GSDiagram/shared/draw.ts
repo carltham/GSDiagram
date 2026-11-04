@@ -1,6 +1,6 @@
 // Draws a laid-out diagram as SVG. Colours are written on the elements, so the SVG stands on its own as a picture.
 
-import { Box, Laid, Line } from './layout';
+import { Box, Laid, Line, LINE_H } from './layout';
 
 export interface Colours {
   background: string;
@@ -36,7 +36,13 @@ export interface DrawOptions {
   known?: Set<string>;
   selected?: string;
   zoom?: number;
+  // The first line each scrolled box shows, by node id.
+  scroll?: Record<string, number>;
 }
+
+// The first line a box shows: its scroll, kept within its lines.
+export const firstLine = (b: Box, scroll?: Record<string, number>) =>
+  Math.max(0, Math.min(scroll?.[b.id] ?? 0, b.lines.length - b.rows));
 
 // Each drawn box and line carries data-node or data-edge, for clicks and dragging.
 export function draw(svg: SVGSVGElement, laid: Laid, o: DrawOptions): void {
@@ -60,7 +66,7 @@ export function draw(svg: SVGSVGElement, laid: Laid, o: DrawOptions): void {
   const isSelected = (key: string) => o.selected === key;
 
   for (const l of laid.lines) drawLine(svg, l, c, isSelected(`edge:${l.index}`), unknown(l.process));
-  for (const b of laid.boxes) drawBox(svg, b, c, isSelected(`node:${b.id}`), unknown(b.process));
+  for (const b of laid.boxes) drawBox(svg, b, c, isSelected(`node:${b.id}`), unknown(b.process), firstLine(b, o.scroll));
 }
 
 function drawLine(svg: SVGSVGElement, l: Line, c: Colours, selected: boolean, unknown: boolean) {
@@ -79,7 +85,7 @@ function drawLine(svg: SVGSVGElement, l: Line, c: Colours, selected: boolean, un
   svg.append(g);
 }
 
-function drawBox(svg: SVGSVGElement, b: Box, c: Colours, selected: boolean, unknown: boolean) {
+function drawBox(svg: SVGSVGElement, b: Box, c: Colours, selected: boolean, unknown: boolean, first: number) {
   const g = el('g', { 'data-node': b.id, transform: `translate(${b.x},${b.y})`, cursor: 'grab' });
   const stroke = selected ? c.selected : unknown ? c.unknown : c.border;
   const width = selected ? 2.5 : 1.3;
@@ -90,9 +96,21 @@ function drawBox(svg: SVGSVGElement, b: Box, c: Colours, selected: boolean, unkn
     g.append(el('circle', { cx: b.w / 2, cy: b.h / 2, r: b.w / 2 - 5, fill: c.text }));
   } else {
     g.append(el('rect', { width: b.w, height: b.h, rx: 8, fill: c.box, stroke, 'stroke-width': width }));
-    g.append(el('text', { x: b.w / 2, y: b.h / 2 + FONT_SIZE / 2 - 2, 'text-anchor': 'middle', 'font-size': FONT_SIZE, fill: c.text }, b.label));
+    // The lines the box shows, one under the other, in the middle of the box.
+    const shown = b.lines.slice(first, first + b.rows);
+    const text = el('text', { 'text-anchor': 'middle', 'font-size': FONT_SIZE, fill: c.text });
+    const top = b.h / 2 - (shown.length - 1) * LINE_H / 2 + FONT_SIZE / 2 - 2;
+    shown.forEach((line, i) => text.append(el('tspan', { x: b.w / 2, y: top + i * LINE_H }, line)));
+    g.append(text);
+    // A box with more lines than it shows has a scroll bar: the track, and the part it shows.
+    if (b.lines.length > b.rows) {
+      const track = b.h - 16, thumb = Math.max(8, track * b.rows / b.lines.length);
+      const y = 8 + (track - thumb) * first / (b.lines.length - b.rows);
+      g.append(el('rect', { x: b.w - 7, y: 8, width: 3, height: track, rx: 1.5, fill: c.border, opacity: 0.3 }));
+      g.append(el('rect', { x: b.w - 7, y, width: 3, height: thumb, rx: 1.5, fill: c.muted }));
+    }
   }
-  if (b.kind !== 'state') g.append(el('title', {}, b.label));
+  if (b.kind !== 'state' || b.lines.length > b.rows) g.append(el('title', {}, b.label));
   svg.append(g);
 }
 

@@ -1,8 +1,8 @@
 // The page inside the GSDiagram editor: draws the diagram, lets boxes be dragged, and shows the process of what is clicked.
 
 import { parseDiagram } from '../shared/diagram';
-import { Colours, draw, FONT_SIZE, LABEL_SIZE, LIGHT, measurer } from '../shared/draw';
-import { Laid, layout } from '../shared/layout';
+import { Colours, draw, firstLine, FONT_SIZE, LABEL_SIZE, LIGHT, measurer } from '../shared/draw';
+import { Laid, layout, Measure, ROWS } from '../shared/layout';
 import { Diagram, FromWebview, Process, ToWebview } from '../shared/types';
 
 declare function acquireVsCodeApi(): { postMessage(m: FromWebview): void };
@@ -20,6 +20,8 @@ let processes: Record<string, Process> = {};
 let hasProcesses = false;
 let selected: string | undefined;
 let zoom = 1;
+// The first line each box shows, by node id, as the wheel scrolls it.
+const scroll: Record<string, number> = {};
 
 function colours(): Colours {
   const css = getComputedStyle(document.body);
@@ -39,7 +41,7 @@ function colours(): Colours {
 
 function redraw() {
   if (!laid) return;
-  draw(svg, laid, { colours: colours(), known: hasProcesses ? new Set(Object.keys(processes)) : undefined, selected, zoom });
+  draw(svg, laid, { colours: colours(), known: hasProcesses ? new Set(Object.keys(processes)) : undefined, selected, zoom, scroll });
   showDetail();
 }
 
@@ -53,10 +55,14 @@ async function update(text: string) {
   }
   problem.hidden = true;
   title.textContent = diagram.title ?? '';
+  laid = await layout(diagram, measure(), { maxRows: ROWS });
+  redraw();
+}
+
+function measure(): Measure {
   const font = colours().font;
   const node = measurer(font, FONT_SIZE), edge = measurer(font, LABEL_SIZE);
-  laid = await layout(diagram, (t, of) => (of === 'node' ? node : edge)(t));
-  redraw();
+  return (t, of) => (of === 'node' ? node : edge)(t);
 }
 
 function escape(s: string) {
@@ -132,6 +138,19 @@ svg.addEventListener('pointerup', e => {
   }
 });
 
+// The wheel over a box with more lines than it shows scrolls its text a line at a time; at either end, or anywhere
+// else, it scrolls the page.
+svg.addEventListener('wheel', e => {
+  const node = (e.target as Element).closest('[data-node]') as SVGGElement | null;
+  const box = node && laid?.boxes.find(b => b.id === node.dataset.node);
+  if (!box || box.lines.length <= box.rows || e.deltaY === 0) return;
+  const first = firstLine(box, scroll), next = Math.max(0, Math.min(first + Math.sign(e.deltaY), box.lines.length - box.rows));
+  if (next === first) return;
+  e.preventDefault();
+  scroll[box.id] = next;
+  redraw();
+}, { passive: false });
+
 document.getElementById('zoom-in')!.addEventListener('click', () => { zoom = Math.min(4, zoom * 1.25); redraw(); });
 document.getElementById('zoom-out')!.addEventListener('click', () => { zoom = Math.max(0.25, zoom / 1.25); redraw(); });
 document.getElementById('reset')!.addEventListener('click', () => post({ type: 'resetLayout' }));
@@ -139,7 +158,9 @@ document.getElementById('png')!.addEventListener('click', () => renderPng());
 
 // Draws the diagram at twice its size, without the selection, and sends it to the extension as a PNG.
 async function renderPng() {
-  if (!laid) return;
+  if (!diagram) return;
+  // Every box as high as its text, as a picture cannot scroll.
+  const laid = await layout(diagram, measure());
   const copy = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   draw(copy, laid, { colours: colours(), zoom: 2 });
   const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(copy)], { type: 'image/svg+xml' }));

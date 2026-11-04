@@ -6,7 +6,7 @@ flowchart TD
     ui --> package[vsce package: gsdiagram-version.vsix]
 
     subgraph unitSuite [Unit: npm test]
-        unit[51 tests in dev/testing/unit] --> shared[GSDiagram/shared: processes, folder, check, layout, architecture, model, review, architectures, generate]
+        unit[54 tests in dev/testing/unit] --> shared[GSDiagram/shared: processes, folder, check, layout, architecture, model, review, architectures, generate]
     end
 
     subgraph extSuite [Extension: npm run test:vscode]
@@ -14,7 +14,7 @@ flowchart TD
     end
 
     subgraph uiSuite [UI: npm run test:ui, its own Node project in dev/testing/playwright]
-        ui[70 tests in dev/testing/playwright/tests] --> fresh[A fresh copy of dev/testing/fixture per test]
+        ui[71 tests in dev/testing/playwright/tests] --> fresh[A fresh copy of dev/testing/fixture per test]
         fresh --> start[VS Code 1.144.0 from .vscode-test, clean environment, under xvfb]
         start --> drive[Playwright drives it: command palette, Problems panel, lenses, editors, the diagram page]
         drive -->|passed| next[Next test]

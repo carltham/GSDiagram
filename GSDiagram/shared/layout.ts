@@ -8,6 +8,9 @@ export interface Point { x: number; y: number }
 export interface Box {
   id: string;
   label: string;
+  // The label wrapped to fit the box, one entry a line, and how many of them the box shows at a time.
+  lines: string[];
+  rows: number;
   kind: NodeKind;
   process?: string;
   x: number; y: number; w: number; h: number;
@@ -27,15 +30,42 @@ export interface Laid { width: number; height: number; boxes: Box[]; lines: Line
 export type Measure = (text: string, of: 'node' | 'edge') => number;
 
 const PAD = 24;
-const BOX_H = 40;
+// A box is ROWS lines high at least; above and below its text is this much room.
+export const ROWS = 3;
+const BOX_PAD = 23;
 const DOT = 22;
 const LABEL_H = 16;
+// A box's text wraps at this width, and a line takes this height.
+export const TEXT_W = 240;
+export const LINE_H = 17;
+
+// The words of a label in lines no wider than TEXT_W; a word wider than that has a line of its own.
+export function wrap(label: string, width: (text: string) => number): string[] {
+  const lines: string[] = [];
+  for (const word of label.split(/\s+/).filter(Boolean)) {
+    const last = lines[lines.length - 1];
+    if (last !== undefined && width(`${last} ${word}`) <= TEXT_W) lines[lines.length - 1] = `${last} ${word}`;
+    else lines.push(word);
+  }
+  return lines.length ? lines : [''];
+}
 
 const elk = new ELK();
 
-export async function layout(d: Diagram, measure: Measure): Promise<Laid> {
-  const size = (n: Diagram['nodes'][number]) =>
-    n.kind === 'start' || n.kind === 'end' ? { w: DOT, h: DOT } : { w: Math.max(110, Math.ceil(measure(n.label, 'node')) + 28), h: BOX_H };
+// The height of a box that shows this many lines.
+export const boxHeight = (rows: number) => BOX_PAD + rows * LINE_H;
+
+// Lays the diagram out. A box is ROWS lines high, or as many as its label takes, up to maxRows; the editor scrolls
+// the rest. Without maxRows, as in a PNG, every box shows all its lines.
+export async function layout(d: Diagram, measure: Measure, { maxRows = Infinity }: { maxRows?: number } = {}): Promise<Laid> {
+  const node = (t: string) => measure(t, 'node');
+  const wrapped = new Map(d.nodes.map(n => [n.id, wrap(n.label, node)]));
+  const rowsOf = (lines: string[]) => Math.max(ROWS, Math.min(lines.length, maxRows));
+  const size = (n: Diagram['nodes'][number]) => {
+    if (n.kind === 'start' || n.kind === 'end') return { w: DOT, h: DOT };
+    const lines = wrapped.get(n.id)!;
+    return { w: Math.max(110, Math.ceil(Math.max(...lines.map(node))) + 28), h: boxHeight(rowsOf(lines)) };
+  };
 
   const graph: ElkNode = {
     id: 'root',
@@ -63,7 +93,7 @@ export async function layout(d: Diagram, measure: Measure): Promise<Laid> {
   const boxes: Box[] = d.nodes.map(n => {
     const c = g.children!.find(x => x.id === n.id)!;
     const moved = typeof n.x === 'number' && typeof n.y === 'number';
-    return { id: n.id, label: n.label, kind: n.kind ?? 'state', process: n.process,
+    return { id: n.id, label: n.label, lines: wrapped.get(n.id)!, rows: rowsOf(wrapped.get(n.id)!), kind: n.kind ?? 'state', process: n.process,
       x: moved ? n.x! : c.x! + PAD, y: moved ? n.y! : c.y! + PAD, w: c.width!, h: c.height! };
   });
   const byId = new Map(boxes.map(b => [b.id, b]));

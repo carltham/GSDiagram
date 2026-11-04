@@ -58,6 +58,7 @@ A `*.diagram.json` file opens in the diagram editor. **Reopen Editor With… →
 
 - Click a box or an arrow to see its process; **Open in the processes file** goes to it.
 - Drag a box to move it. **Reset layout** forgets every dragged position.
+- A box is three lines high; a longer text wraps, and the mouse wheel over the box scrolls it. Its whole text is in its tooltip, and in a PNG every box is as high as its text.
 - **−** and **+** zoom.
 - **Render PNG** saves the diagram as a PNG next to it.
 - A process id that is not in the processes file is drawn in red.

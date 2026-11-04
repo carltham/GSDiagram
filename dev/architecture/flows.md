@@ -48,7 +48,7 @@ Without a processes file, nothing is checked against processes. A process the di
 1. The user opens a `*.diagram.json` file. VS Code opens it in the GSDiagram editor, its default editor for these files.
 2. The editor creates the page and, when the page says it is ready, sends it the document's text, the processes of its workspace folder, and whether a processes file is set.
 3. The page reads the diagram. If it is not a diagram, the page shows why above the drawing and keeps the last drawing.
-4. The page measures the labels in the theme's font, lays the diagram out, and draws it in the theme's colours. A box or an arrow whose process is not in the processes file is drawn in the error colour.
+4. The page measures the labels in the theme's font, lays the diagram out, and draws it in the theme's colours. Each box is three lines high; the mouse wheel scrolls a longer text. A box or an arrow whose process is not in the processes file is drawn in the error colour.
 5. Whenever the document changes, by typing in it as text, by undo, or by any edit, and whenever the check has run, the editor sends the page the text and processes again, and the page draws again.
 
 **Reopen Editor With… → Text Editor** shows the JSON. Both editors work on the same document.

@@ -104,8 +104,7 @@ function fromSteps(steps: string[], b: Builder): void {
     // Cut where the first sentence or clause ends, but not inside **bold**, `code`, or a link.
     const masked = step.replace(/\*\*.+?\*\*|`[^`]+`|\[[^\]]*\]\([^)]*\)/g, m => 'x'.repeat(m.length));
     const cut = masked.search(/:\s|\.\s|;\s|\.$/);
-    let label = b.linked(plain(cut < 0 ? step : step.slice(0, cut))).label;
-    if (label.length > 48) label = label.slice(0, 47).trimEnd() + '…';
+    const label = b.linked(plain(cut < 0 ? step : step.slice(0, cut))).label;
     const id = b.node(`step${i + 1}`);
     Object.assign(b.nodes.find(n => n.id === id)!, { label, ...(process ? { process } : {}) });
     b.edge(last, id);

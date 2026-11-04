@@ -106,6 +106,12 @@ test('a marked section without arrows is a diagram of its numbered steps', () =>
   assert.deepEqual(arrows(found.diagram).map(([f, t]) => `${f}>${t}`), ['start>step1', 'step1>step2', 'step2>step3', 'step3>end']);
 });
 
+test('a long step keeps all its words in its label', () => {
+  const step = "If no workspace folder's architecture files describe a diagram, Generate says so and stops";
+  const found = only(`## Generate\n<!-- diagram -->\n\n1. ${step}.\n`);
+  assert.equal(found.diagram.nodes.find(n => n.id === 'step1')!.label, step);
+});
+
 test('a section without a marker is not a diagram, even with arrows or steps', () => {
   assert.deepEqual(read(`## Rules
 

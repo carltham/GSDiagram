@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { layout } from '../../../GSDiagram/shared/layout';
+import { boxHeight, layout, ROWS, TEXT_W, wrap } from '../../../GSDiagram/shared/layout';
 import { Diagram } from '../../../GSDiagram/shared/types';
 
 const measure = (t: string) => t.length * 7;
@@ -35,4 +35,27 @@ test('a dragged node keeps its position, and its arrows are straight', async () 
   assert.deepEqual([b.x, b.y], [500, 300]);
   assert.equal(laid.lines[1].points.length, 2);
   assert.ok(laid.width >= 500 + b.w);
+});
+
+test('a long label wraps at word breaks; a box is three lines high, or as many as its text takes up to its limit', async () => {
+  const label = "If no workspace folder's architecture files describe a diagram, Generate says so and stops, and nothing is written to the data folder";
+  const lines = wrap(label, measure);
+  assert.ok(lines.length > ROWS);
+  assert.equal(lines.join(' '), label);
+  for (const l of lines) assert.ok(measure(l) <= TEXT_W);
+  const d: Diagram = { title: 'T', nodes: [{ id: 'a', label }, { id: 'b', label: 'Short' }], edges: [{ from: 'a', to: 'b' }] };
+
+  const scrolled = await layout(d, measure, { maxRows: ROWS });
+  const [a, b] = scrolled.boxes;
+  assert.deepEqual([a.lines, a.rows, a.h], [lines, ROWS, boxHeight(ROWS)]);
+  assert.deepEqual([b.lines, b.rows, b.h], [['Short'], ROWS, boxHeight(ROWS)]);
+  assert.equal(a.w, Math.max(...lines.map(measure)) + 28);
+
+  const whole = await layout(d, measure);
+  assert.deepEqual([whole.boxes[0].rows, whole.boxes[0].h], [lines.length, boxHeight(lines.length)]);
+  assert.equal(whole.boxes[1].h, boxHeight(ROWS));
+});
+
+test('a word wider than a line has a line of its own', () => {
+  assert.deepEqual(wrap(`a ${'x'.repeat(50)} b`, measure), ['a', 'x'.repeat(50), 'b']);
 });

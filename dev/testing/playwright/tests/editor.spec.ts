@@ -98,6 +98,31 @@ test('+ and − zoom the drawing, within limits', async ({ vscode }) => {
   await expect.poll(() => d.width()).toBeCloseTo(base * 4, 3);
 });
 
+test('a box is three lines high, and the wheel scrolls a longer text a line at a time', async ({ vscode }) => {
+  const words = Array.from({ length: 40 }, (_, i) => `word${i + 1}`);
+  await vscode.write('.gsdiagram/long.diagram.json', JSON.stringify({ title: 'Long', nodes: [
+    { id: 'long', label: words.join(' ') }, { id: 'short', label: 'Short' }], edges: [{ from: 'long', to: 'short' }] }));
+  await vscode.open('.gsdiagram/long.diagram.json');
+  const d = vscode.diagram();
+  await expect(d.title()).toHaveText('Long');
+  const lines = (id: string) => d.node(id).locator('tspan');
+  const height = (id: string) => d.node(id).locator('rect').first().getAttribute('height');
+  await expect(lines('long')).toHaveCount(3);
+  await expect(lines('short')).toHaveCount(1);
+  expect(await height('short')).toBe(await height('long'));
+  await expect(lines('long').first()).toHaveText(/^word1 /);
+
+  const box = (await d.node('long').boundingBox())!;
+  await vscode.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await vscode.page.mouse.wheel(0, 100);
+  await expect(lines('long').first()).not.toHaveText(/^word1 /);
+  await expect(lines('long')).toHaveCount(3);
+  for (let i = 0; i < 20; i++) await vscode.page.mouse.wheel(0, 100);
+  await expect(lines('long').last()).toHaveText(/word40$/);
+  for (let i = 0; i < 20; i++) await vscode.page.mouse.wheel(0, -100);
+  await expect(lines('long').first()).toHaveText(/^word1 /);
+});
+
 test('dragging a box moves it and changes the file like typing would; save writes it', async ({ vscode }) => {
   const d = vscode.diagram();
   const before = await d.position('sent');
