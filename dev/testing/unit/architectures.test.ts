@@ -108,3 +108,17 @@ test('an architecture folder inside another belongs to itself only', () => {
     ['v2', 'dev/architecture/design/v2', ['dev/architecture/design/v2/flows.md']],
   ]);
 });
+
+test('with subfolderArchitectures false, a subfolder is part of its folder, and an archived one stays its own', () => {
+  const p = project({
+    'dev/architecture/README.md': components('app'),
+    'dev/architecture/core/flows.md': flows,
+    'dev/architecture/model/notes.md': '# Notes\n',
+    'dev/architecture/old/components.md': components('app'),
+  }, { config: { subfolderArchitectures: false } });
+  assert.deepEqual(summary(p).map(([name, rel, archived, files]) => [name, rel, archived, files]), [
+    ['architecture', 'dev/architecture', false,
+      ['dev/architecture/README.md', 'dev/architecture/core/flows.md', 'dev/architecture/model/notes.md']],
+    ['old', 'dev/architecture/old', true, ['dev/architecture/old/components.md']],
+  ]);
+});

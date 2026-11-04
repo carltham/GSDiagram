@@ -1,7 +1,8 @@
 // The architecture model: what the architecture files say the system is made of, read from their tables and lists.
 //   Components: a table with a Component column and a Uses column. The heading above the table is their layer.
 //   External systems: a table with an Outside column (or External, or System).
-//   Actors: the bold names of the list items under a heading Who uses it (or Users, Actors, Roles).
+//   Actors: the bold names of the list items under a heading Who uses it (or Actors, Roles, People). Not Users: in a
+//   project's own architecture, that is as often a screen, whose list is of its controls.
 //   Data: a table with File, Read, and Written columns.
 //   Flows: in a file whose name or title says flow, every section with numbered steps.
 //   Rules: list items "Rule: <from> must not use <to>", where each side is a component, a folder ending in /, or a layer.
@@ -192,7 +193,7 @@ export function analyseArchitecture(files: { rel: string; text: string }[], syst
         }
       }
 
-      if (/^(who uses it|users|actors|roles|people)$/i.test(section.heading)) {
+      if (/^(who uses it|actors|roles|people)$/i.test(section.heading)) {
         for (const { text: t, n } of section.lines) {
           const m = /^(\s{0,3}[-*+]\s+)\*\*(.+?)\*\*/.exec(t);
           if (!m) continue;

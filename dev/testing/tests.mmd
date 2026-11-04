@@ -6,7 +6,7 @@ flowchart TD
     ui --> package[vsce package: gsdiagram-version.vsix]
 
     subgraph unitSuite [Unit: npm test]
-        unit[54 tests in dev/testing/unit] --> shared[GSDiagram/shared: processes, folder, check, layout, architecture, model, review, architectures, generate]
+        unit[56 tests in dev/testing/unit] --> shared[GSDiagram/shared: processes, folder, check, layout, architecture, model, review, architectures, generate]
     end
 
     subgraph extSuite [Extension: npm run test:vscode]

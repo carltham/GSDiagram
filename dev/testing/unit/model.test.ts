@@ -191,3 +191,8 @@ test('the model file names every place as file:line', () => {
   assert.deepEqual(Object.keys(written), ['system', 'elements', 'links', 'rules', 'unresolved']);
   assert.equal(written.elements[0].at, 'dev/architecture/components.md:7');
 });
+
+test('a heading Users gives no actors: in an architecture it is as often a screen, its list of its controls', () => {
+  const m = analyseArchitecture([{ rel: 'layout.md', text: '# Layout\n\n### Users\n\n- **Add user**, with a name.\n- **Remove**, with a confirm.\n\n## Roles\n\n- **Administrator.** Manages the users.\n' }], 'Shop');
+  assert.deepEqual(names(m, 'actor'), ['Administrator']);
+});

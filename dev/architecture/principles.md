@@ -36,4 +36,4 @@ The fixed decisions. Every part of GSDiagram follows them.
 
 ## Generic
 
-- **Nothing is specific to one project.** The processes file, the id pattern, the data folder, and the architecture folder are all settings, with neutral defaults.
+- **Nothing is specific to one project.** The processes file, the id pattern, the data folder, and the architecture folders are all settings, with neutral defaults.

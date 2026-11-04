@@ -4,16 +4,16 @@ What happens, step by step, for each thing a user does.
 
 ## The extension starts
 
-1. VS Code starts the extension once it has started itself.
-2. The extension registers the diagram editor, the lenses and hover for Markdown files, the side bar, and the commands.
+1. VS Code starts `GSDiagram/extension/extension` once it has started itself.
+2. It registers the diagram editor, the lenses and hover for Markdown files, the side bar, and the commands.
 3. It starts watching: open documents of diagrams, `config.json` files, and Markdown files as they are typed and saved; the same files as they are created, changed, and deleted on disk; the workspace folders; and the `gsdiagram` settings.
-4. It runs the check once. A workspace folder without a data folder, or with an empty one, gives no findings and has nothing written to it.
+4. `GSDiagram/extension/check` runs the check once. A workspace folder without a data folder, or with an empty one, gives no findings and has nothing written to it.
 
 ## The side bar is opened
 
 1. The user clicks the GSDiagram icon in the Activity Bar.
 2. `GSDiagram/extension/sidebar` lists the diagrams of each workspace folder from the last check: by name, `generated` when it has a `source`, and its count of findings, marked by the worst.
-3. It lists the model of the architecture files, read by `GSDiagram/shared/model`: Context, Components by layer, Data, Flows, and Rules, each with its count, and last the count of findings about the architecture.
+3. It lists each architecture that `GSDiagram/shared/architectures` finds, a group of its own when there are several, archived ones closed: its model, read by `GSDiagram/shared/model`, as Context, Components by layer, Data, Flows, and Rules, each with its count, and last the count of findings about it.
 4. A list with nothing in it shows its welcome instead: for Diagrams, Generate diagrams, Set processes file, Choose data folder, and Open the README; for Architecture, what to write, and Open the README.
 5. A click on a diagram opens it in the GSDiagram editor; on an element of the model, its file at its line; on the count of findings, the Problems panel.
 6. Each time the check has run, both lists are built again.
@@ -21,9 +21,9 @@ What happens, step by step, for each thing a user does.
 ## The check runs
 
 1. Something that can change the check happens: a diagram, a `config.json`, or a Markdown file is typed in, saved, created, changed, or deleted; a workspace folder is added or removed; a `gsdiagram` setting changes. Or the user runs **GSDiagram: Check**.
-2. 300 ms after the last such change, the checker loads each workspace folder's project. The text of an open document is used in place of its file, so unsaved typing counts.
+2. 300 ms after the last such change, `GSDiagram/extension/check` loads each workspace folder's project. The text of an open document is used in place of its file, so unsaved typing counts.
 3. A data folder outside the project is refused: an error message, once per folder, and that folder is left out.
-4. Each project is checked: every diagram file, the processes file, and the sources of generated diagrams.
+4. `GSDiagram/shared/check` checks each project: every diagram file, the processes file, the sources of generated diagrams, and each architecture that is not archived.
 5. The findings replace the last ones in the Problems panel, each at its place in its file.
 6. Open diagram editors get the processes again, and the lenses are asked for again.
 7. For **GSDiagram: Check**, a message gives the count of errors, warnings, and processes in no diagram.
@@ -46,9 +46,9 @@ Without a processes file, nothing is checked against processes. A process the di
 ## A diagram is opened
 
 1. The user opens a `*.diagram.json` file. VS Code opens it in the GSDiagram editor, its default editor for these files.
-2. The editor creates the page and, when the page says it is ready, sends it the document's text, the processes of its workspace folder, and whether a processes file is set.
-3. The page reads the diagram. If it is not a diagram, the page shows why above the drawing and keeps the last drawing.
-4. The page measures the labels in the theme's font, lays the diagram out, and draws it in the theme's colours. Each box is three lines high; the mouse wheel scrolls a longer text. A box or an arrow whose process is not in the processes file is drawn in the error colour.
+2. `GSDiagram/extension/editor` creates the page and, when the page says it is ready, sends it the document's text, the processes of its workspace folder, and whether a processes file is set.
+3. The page, `GSDiagram/webview/main`, reads the diagram. If it is not a diagram, the page shows why above the drawing and keeps the last drawing.
+4. The page measures the labels in the theme's font, `GSDiagram/shared/layout` lays the diagram out, and `GSDiagram/shared/draw` draws it in the theme's colours. Each box is three lines high; the mouse wheel scrolls a longer text. A box or an arrow whose process is not in the processes file is drawn in the error colour.
 5. Whenever the document changes, by typing in it as text, by undo, or by any edit, and whenever the check has run, the editor sends the page the text and processes again, and the page draws again.
 
 **Reopen Editor With… → Text Editor** shows the JSON. Both editors work on the same document.
@@ -56,7 +56,7 @@ Without a processes file, nothing is checked against processes. A process the di
 ## A box or an arrow is clicked
 
 1. The user clicks a box without moving it, or clicks an arrow.
-2. The page draws it as selected and shows its detail: the box's label, or the arrow's label with the ids it runs between, and then:
+2. `GSDiagram/webview/main` draws it as selected and shows its detail: the box's label, or the arrow's label with the ids it runs between, and then:
    - its group, id, title, text, and **Open in the processes file**; or
    - that it has no process; or
    - that its process is not in the processes file; or
@@ -68,15 +68,15 @@ Clicking the background clears the selection.
 ## A box is dragged
 
 1. The user presses on a box and moves the pointer more than 3 pixels. The box follows the pointer.
-2. On release, the page sends the new position, rounded to whole pixels.
-3. The editor reads the document, sets the box's `x` and `y`, and replaces the document's text with the diagram written again. The document is now changed, but not saved.
+2. On release, `GSDiagram/webview/main` sends the new position, rounded to whole pixels.
+3. `GSDiagram/extension/editor` reads the document, sets the box's `x` and `y`, and replaces the document's text with the diagram written again. The document is now changed, but not saved.
 4. The document change makes the page draw again. The box stays where it was dropped, and its arrows are drawn straight.
 5. Undo and redo move it back and forth. Saving writes the file.
 
 ## Reset layout
 
 1. The user presses **Reset layout**.
-2. The editor removes `x` and `y` from every box. If no box had them, nothing changes and the file is left as it was written.
+2. `GSDiagram/extension/editor` removes `x` and `y` from every box. If no box had them, nothing changes and the file is left as it was written.
 3. The page draws again with the automatic layout.
 
 ## Zoom
@@ -86,8 +86,8 @@ Clicking the background clears the selection.
 ## Render PNG, in the editor
 
 1. The user presses **Render PNG**, or runs **GSDiagram: Render PNG** with a diagram editor in front.
-2. The page draws the diagram again, at twice its size, without the selection, in the theme's colours, and turns it into a PNG.
-3. The editor writes it next to the diagram, `orders.diagram.json` to `orders.png`, replacing one that is there, and says it is saved.
+2. `GSDiagram/webview/main` draws the diagram again, at twice its size, without the selection, in the theme's colours, every box as high as its text, and turns it into a PNG.
+3. `GSDiagram/extension/editor` writes it next to the diagram, `orders.diagram.json` to `orders.png`, replacing one that is there, and says it is saved.
 
 Without a diagram editor in front, the command says to open a diagram first.
 
@@ -95,7 +95,7 @@ Without a diagram editor in front, the command says to open a diagram first.
 
 1. The user runs **GSDiagram: Accept process changes** with a diagram open, in the GSDiagram editor or as text.
 2. The check runs first.
-3. For every process the diagram uses that is in the processes file, the current hash of its title and text is recorded in `drawn`, which is written anew. Ids not in the processes file are left out of it.
+3. `GSDiagram/shared/check` records, for every process the diagram uses that is in the processes file, the current hash of its title and text in `drawn`, which is written anew. Ids not in the processes file are left out of it.
 4. The document is changed, like an edit; saving writes it. The change warnings for that diagram go away.
 
 Without a diagram open, it says to open one; without a processes file, it says none is set.
@@ -105,9 +105,9 @@ Without a diagram open, it says to open one; without a processes file, it says n
 1. The user runs **GSDiagram: Analyse architecture**.
 2. The check runs first; `GSDiagram/shared/review` adds its findings about the architecture to the Problems panel.
 3. If no workspace folder's architecture files hold anything for the model, a message says so and nothing is written.
-4. For each workspace folder, `GSDiagram/extension/extension` asks `GSDiagram/shared/generate` for the model, which `GSDiagram/shared/model` reads from the architecture files.
+4. For each architecture that `GSDiagram/shared/architectures` finds, `GSDiagram/shared/model` reads the model from its files.
 5. `GSDiagram/extension/extension` writes each architecture's model to `architecture.json` in its folder of the data folder, creating it if it is not there. An archived architecture is analysed too, but not checked.
-6. A message says what the model holds and how many warnings and notes are in the Problems panel.
+6. A message per architecture says what the model holds and how many warnings and notes are in the Problems panel.
 
 ## Generate diagrams
 
@@ -122,7 +122,7 @@ Without a diagram open, it says to open one; without a processes file, it says n
 
 As Generate, and also:
 
-1. Each diagram file whose `source` is still described is drawn again from it: its title, direction, nodes, and arrows are the source's.
+1. `GSDiagram/shared/generate` draws each diagram file whose `source` is still described again from it: its title, direction, nodes, and arrows are the source's.
 2. A box that is still there, by its id, keeps its dragged position. `drawn` is kept.
 3. Everything else the file had is replaced, including labels changed by hand and other fields.
 4. A file whose text would not change is not touched. A diagram without a `source`, drawn by hand, is never touched.
@@ -147,7 +147,7 @@ As Generate, and also:
 ## See where a process is drawn
 
 1. The user opens the processes file of a workspace folder.
-2. Above each process is a lens per diagram that uses it, `in orders`, which opens that diagram in the GSDiagram editor; or `in no diagram`, which does nothing.
+2. `GSDiagram/extension/links` puts above each process a lens per diagram that uses it, `in orders`, which opens that diagram in the GSDiagram editor; or `in no diagram`, which does nothing.
 3. Pointing at a process's line shows the same, with links that open the diagrams.
 4. The lenses follow the check: a process typed in gets its lens, and a new diagram shows up above its processes.
 
@@ -158,7 +158,7 @@ Other Markdown files have no lenses and no hover.
 1. The user runs **GSDiagram: Choose data folder**, and picks the workspace folder when there are several.
 2. A folder picker opens at the project.
 3. A folder outside the project is refused with a message. Cancelling changes nothing.
-4. The folder, relative to the project, is stored in the project's `.vscode/settings.json` as `gsdiagram.folder`.
+4. `GSDiagram/extension/extension` stores the folder, relative to the project, in the project's `.vscode/settings.json` as `gsdiagram.folder`.
 5. The check runs with the new data folder.
 
 ## Set processes file
@@ -166,18 +166,22 @@ Other Markdown files have no lenses and no hover.
 1. The user runs **GSDiagram: Set processes file**, and picks the workspace folder when there are several.
 2. A file picker for Markdown files opens at the project.
 3. A file outside the project is refused with a message. Cancelling changes nothing.
-4. The file, relative to the project, is written as `processesFile` into `config.json`, keeping its other fields. The data folder is created if it is not there.
+4. `GSDiagram/extension/extension` writes the file, relative to the project, as `processesFile` into `config.json`, keeping its other fields. The data folder is created if it is not there.
 5. The check runs against the new processes file.
 
 ## The command line
 
-Run as `node dist/cli.js <command> <project>`, after a build. The project is the current folder when left out. The data folder is read from the project's `.vscode/settings.json`.
+1. A developer or an agent runs `GSDiagram/cli/cli` as `node dist/cli.js <command> <project>`, after a build. The project is the current folder when left out.
+2. It reads the data folder from the project's `.vscode/settings.json`, and loads the project with `GSDiagram/shared/project`.
+3. It does the command, with the same code as the extension; for `render`, it opens `GSDiagram/webview/render` in headless Chrome.
+4. It prints what it found or wrote, and exits with 0, or with 1 on findings or a failure.
 
 | Command | What it does |
 |---|---|
 | `check` | Prints each finding as `file:line:column: severity: message`, then the counts. Exits with 1 when there are errors or warnings, else 0. |
 | `render` | Opens the render page in headless Chrome, `/usr/bin/google-chrome` unless `--chrome <path>` names another, and writes each diagram's PNG next to it, at twice its size, in the light colours. |
 | `accept` | Accepts process changes in every diagram, and writes them. Stops when no processes file is set. |
+| `analyse` | As Analyse architecture: writes each architecture's `architecture.json` and prints the findings about it. |
 | `generate` | As Generate diagrams, writing the files directly. Stops when no diagrams are described. |
 | `update` | As Update diagrams, writing the files directly. Stops when no diagrams are described. |
 

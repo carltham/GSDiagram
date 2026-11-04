@@ -1,5 +1,6 @@
 // The architectures of a project. Each architecture folder is one, of the files directly in it, and so is each of its
-// subfolders, of all the files in it: dev/architecture and dev/architecture/old. A folder inside another architecture
+// subfolders, of all the files in it: dev/architecture and dev/architecture/old. With subfolderArchitectures false, a
+// subfolder is part of its folder's architecture instead, unless it is archived. A folder inside another architecture
 // folder belongs to itself only.
 //
 // Each architecture has its own model, its own findings, and its own diagrams, in a subfolder of the data folder named
@@ -44,7 +45,10 @@ function find(project: Project): Architecture[] {
     const root = roots.find(r => f.file.startsWith(r + path.sep));
     if (!root) continue;
     const first = path.relative(root, f.file).split(path.sep);
-    const folder = first.length > 1 ? path.join(root, first[0]) : root;
+    const sub = first.length > 1 ? path.join(root, first[0]) : undefined;
+    const own = sub && (project.config.subfolderArchitectures !== false
+      || (project.config.archived?.[relative(project, sub)] ?? ARCHIVED_NAME.test(first[0])));
+    const folder = own ? sub : root;
     byFolder.set(folder, [...(byFolder.get(folder) ?? []), f]);
   }
   // Every architecture folder is listed, even empty; a subfolder only when it holds Markdown.

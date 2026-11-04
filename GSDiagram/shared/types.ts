@@ -37,13 +37,16 @@ export interface Config {
   // The pattern of a process id, as a regular expression.
   idPattern?: string;
   // The folders of the architecture files, relative to the project. Each is an architecture, and so is each of its
-  // subfolders. dev/architecture unless set.
+  // subfolders, unless subfolderArchitectures is false. dev/architecture unless set.
   architectureFolders?: string[];
   // One folder, as before there could be several; read when architectureFolders is not set.
   architectureFolder?: string;
   // Architectures marked archived, true, or current, false, by their folder relative to the project. Unless marked, a
-  // folder named old, archive, redundant, obsolete, deprecated, or legacy is archived.
+  // folder named old, archive, archived, redundant, obsolete, deprecated, legacy, retired, or former is archived.
   archived?: Record<string, boolean>;
+  // Whether a subfolder of an architecture folder is an architecture of its own. True unless set; when false, a
+  // subfolder is part of its folder's architecture, unless it is archived.
+  subfolderArchitectures?: boolean;
 }
 
 export const DEFAULT_ARCHITECTURE_FOLDER = 'dev/architecture';

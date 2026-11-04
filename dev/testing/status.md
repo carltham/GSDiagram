@@ -2,11 +2,11 @@
 
 The state of the tests now. The UI run in progress, test by test with progress bars, is in [test-log.md](test-log.md), written live by `playwright/log-reporter.ts`; how the tests fit together is in [tests.mmd](tests.mmd).
 
-Last updated: 2026-11-01 12:06.
+Last updated: 2026-11-04 20:51.
 
 | Suite | Run with | Tests | Last result |
 |---|---|---|---|
-| Unit | `npm test` | 54 | 54 passed (2026-11-01) |
+| Unit | `npm test` | 56 | 56 passed (2026-11-04) |
 | Extension | `npm run test:vscode` | 3 | 3 passed (2026-11-01 11:53) |
 | UI | `npm run test:ui` | 71 | 71 passed (2026-11-01 18:18) |
 
@@ -20,4 +20,6 @@ Last updated: 2026-11-01 12:06.
 
 ## Not committed
 
-Version 0.2.1. A long label wraps over several lines instead of being cut at 48 characters with `…`. A box is three lines high, and the mouse wheel scrolls a longer text; a PNG shows every box whole. `GSDiagram/shared/layout.ts`, `draw.ts`, `architecture.ts`, `GSDiagram/webview/main.ts`, 3 unit tests and 1 UI test. All pass: unit 54, extension 3, UI 71.
+A heading Users no longer gives actors, only Who uses it, Actors, Roles, or People: in a project's architecture, Users is as often a screen, and its list is of its controls. A new setting, `subfolderArchitectures`, `true` unless set: when `false`, a subfolder is part of its folder's architecture, unless it is archived. `GSDiagram/shared/model.ts`, `architectures.ts`, `types.ts`, the README, `data.md`, `components.md`, and 2 unit tests. Unit 56 pass; the extension and UI tests were not run.
+
+The architecture checked against itself and the code, four rounds, from 14 notes to 0 warnings and 0 notes: each flow names the components that do its steps, the command line is a flow of its own, and stale descriptions are brought up to date. `dev/architecture/`, the README and `types.ts` name every archived folder name. The imports match every Uses cell.

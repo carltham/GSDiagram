@@ -98,7 +98,7 @@ GSDiagram reads a model of the project from the Markdown files in `dev/architect
 |---|---|
 | A table with a **Component** column and a **Uses** column | Components, and which use which. The heading above the table is their layer. |
 | A table with an **Outside** column | External systems |
-| The bold names in the list under **Who uses it** (or Users, Actors) | Actors |
+| The bold names in the list under **Who uses it** (or Actors, Roles, People) | Actors |
 | A table with **File**, **Read**, and **Written** columns | Data, and whether anything reads or writes it |
 | In a file whose name or title says flow, a section with numbered steps | A flow, and the components its steps name in `code` |
 | A list item `Rule: shared/ must not use src/` | A rule. Each side is a component, a folder ending in `/`, or a layer. |
@@ -121,7 +121,9 @@ What does not hold together is in the Problems panel, at its place in the archit
 
 A project can have more than one architecture. Each architecture folder is one, of the files directly in it, and so is each of its subfolders: `dev/architecture`, `dev/architecture/billing`, `dev/architecture/old`. Each has its own model, its own findings, and its own diagrams, in a folder of the data folder named after it: `.gsdiagram/architecture`, `.gsdiagram/billing`. The side bar lists each as a group of its own.
 
-- **Archived:** an old or redundant architecture. It is listed, and its diagrams can be opened, but it gives no findings, its diagrams count for no process, and Generate and Update leave it alone. A folder named `old`, `archive`, `redundant`, `obsolete`, `deprecated`, or `legacy` is archived by itself; any architecture can be marked archived or current with the button on its row in the side bar, or with **GSDiagram: Mark architecture archived** and **Mark architecture current**. Moving an architecture's files into an `old` folder archives the diagrams drawn from them too.
+When the subfolders are parts of one architecture, such as `core`, `model`, and `rules`, `"subfolderArchitectures": false` in `config.json` keeps them in their folder's architecture; an archived subfolder stays one of its own.
+
+- **Archived:** an old or redundant architecture. It is listed, and its diagrams can be opened, but it gives no findings, its diagrams count for no process, and Generate and Update leave it alone. A folder named `old`, `archive`, `archived`, `redundant`, `obsolete`, `deprecated`, `legacy`, `retired`, or `former` is archived by itself; any architecture can be marked archived or current with the button on its row in the side bar, or with **GSDiagram: Mark architecture archived** and **Mark architecture current**. Moving an architecture's files into an `old` folder archives the diagrams drawn from them too.
 - **Elsewhere in the project:** **GSDiagram: Add architecture folder**, also in the Architecture list's title bar, adds another folder, such as `docs/design`; **Remove architecture folder** takes one off the list. `dev/architecture` is the only one until another is added.
 
 `config.json` keeps them:

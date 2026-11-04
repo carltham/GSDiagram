@@ -27,9 +27,10 @@ In the data folder. Every field may be left out.
 |---|---|---|
 | `processesFile` | The processes file, relative to the project | No processes file: the diagrams work, and nothing is checked against processes |
 | `idPattern` | The pattern of a process id, as a regular expression | `[A-Z]{4}\d+` |
-| `architectureFolders` | The architecture folders, relative to the project. Each is an architecture, and so is each of its subfolders. | `architectureFolder`, or else `dev/architecture` |
+| `architectureFolders` | The architecture folders, relative to the project. Each is an architecture, and so is each of its subfolders, unless `subfolderArchitectures` is false. | `architectureFolder`, or else `dev/architecture` |
 | `architectureFolder` | One architecture folder, as before there could be several | `dev/architecture` |
-| `archived` | Architectures marked archived, `true`, or current, `false`, by their folder relative to the project | A folder named `old`, `archive`, `redundant`, `obsolete`, `deprecated`, `legacy`, `retired`, or `former` is archived |
+| `archived` | Architectures marked archived, `true`, or current, `false`, by their folder relative to the project | A folder named `old`, `archive`, `archived`, `redundant`, `obsolete`, `deprecated`, `legacy`, `retired`, or `former` is archived |
+| `subfolderArchitectures` | Whether each subfolder of an architecture folder is an architecture of its own. When `false`, it is part of its folder's, unless it is archived. | `true` |
 
 ## `*.diagram.json`
 
@@ -94,7 +95,7 @@ Only the first of two items with the same id counts. A bold item without an id, 
 
 ## The architecture files
 
-Every `.md` file under the architecture folder, in all its subfolders. A diagram is described in a marked section: a heading's section with `<!-- diagram -->`, or `<!-- diagram: name -->` to name its file. The diagram is drawn from the section's list items with arrows:
+Every `.md` file under each architecture folder, in all its subfolders. A diagram is described in a marked section: a heading's section with `<!-- diagram -->`, or `<!-- diagram: name -->` to name its file. The diagram is drawn from the section's list items with arrows:
 
 ```markdown
 ## Invoice
@@ -115,7 +116,7 @@ Further:
 - **Its source** is the file, relative to the project, `#` and the heading's anchor. A second diagram under the same heading gets `-2`, a third `-3`.
 - **A described diagram needs an arrow, or at least two boxes.**
 
-The architecture files are also read as a model of the project, by the headers of their tables and the headings of their lists: components from a table with Component and Uses columns, external systems from an Outside column, actors from the bold names under Who uses it, data from File, Read, and Written columns, flows from the numbered steps in a file whose name or title says flow, and rules from items `Rule: <from> must not use <to>`. The views of the model, the context, the components, and each flow, are diagrams too; a diagram described in a section wins over a flow of the same section.
+The architecture files are also read as a model of the project, by the headers of their tables and the headings of their lists: components from a table with Component and Uses columns, external systems from an Outside column, actors from the bold names under Who uses it, Actors, Roles, or People, data from File, Read, and Written columns, flows from the numbered steps in a file whose name or title says flow, and rules from items `Rule: <from> must not use <to>`. The views of the model, the context, the components, and each flow, are diagrams too; a diagram described in a section wins over a flow of the same section.
 
 ## `architecture.json`
 
